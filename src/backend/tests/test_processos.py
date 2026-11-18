@@ -429,3 +429,19 @@ async def test_historico_registra_acoes_confirmadas_sem_repetir_aprovacao(
     eventos = resposta.json()
     assert [evento["acao"] for evento in eventos] == ["aprovacao", "edicao", "analise"]
     assert all(evento["usuario"] == "operador" and evento["criado_em"] for evento in eventos)
+
+
+async def test_download_pdf_original_exige_sessao_e_devolve_arquivo(
+    cliente: AsyncClient, cliente_operador: AsyncClient
+) -> None:
+    corpo = make_pdf(TEXTO_PROCESSO)
+    processo_id = (await upload(cliente_operador, conteudo=corpo)).json()["id"]
+    url = f"/api/processos/{processo_id}/documentos/original"
+
+    assert (await cliente.get(url)).status_code == 401
+    resposta = await cliente_operador.get(url)
+    assert resposta.status_code == 200
+    assert resposta.content == corpo
+    assert resposta.headers["content-type"] == "application/pdf"
+    assert resposta.headers["content-disposition"].startswith("attachment;")
+    assert resposta.headers["cache-control"] == "private, no-store"

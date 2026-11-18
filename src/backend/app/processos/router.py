@@ -2,6 +2,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -76,6 +77,19 @@ async def listar(
 @router.get("/{processo_id}", response_model=ProcessoDetalheHttpOut)
 async def detalhe(processo_id: UUID, session: SessionDep) -> ProcessoDetalheHttpOut:
     return await service.detalhe_http(session, processo_id)
+
+
+@router.get("/{processo_id}/documentos/original", response_class=FileResponse)
+async def baixar_pdf_original(
+    processo_id: UUID, session: SessionDep, settings: SettingsDep
+) -> FileResponse:
+    caminho, nome = await service.obter_pdf_original(session, settings, processo_id)
+    return FileResponse(
+        caminho,
+        media_type="application/pdf",
+        filename=nome,
+        headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
+    )
 
 
 @router.get("/{processo_id}/pendencias", response_model=list[Pendencia])

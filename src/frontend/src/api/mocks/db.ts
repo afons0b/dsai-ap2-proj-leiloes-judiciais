@@ -18,6 +18,7 @@ export type UsuarioMock = UsuarioOut & { password: string }
 export type ProcessoMock = ProcessoOut & {
   checklist: Checklist | null
   relatorio: Relatorio | null
+  arquivoPdf?: File
   revisaoChecklist?: string
   aprovacaoChecklist?: AprovacaoChecklist
   historicoChecklist?: EventoChecklist[]

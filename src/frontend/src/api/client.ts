@@ -83,6 +83,9 @@ async function corpo<T>(res: Response): Promise<T> {
 }
 
 export const api = {
+  baixar(path: string): Promise<Blob> {
+    return request('GET', path).then((r) => r.blob())
+  },
   get<T>(path: string): Promise<T> {
     return request('GET', path).then((r) => corpo<T>(r))
   },

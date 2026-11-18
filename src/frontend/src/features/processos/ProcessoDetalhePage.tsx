@@ -17,6 +17,7 @@ import { ouTraco } from '@/lib/formatar'
 import { AprovacaoChecklistCard } from './AprovacaoChecklistCard'
 import { ChecklistForm } from './ChecklistForm'
 import { ChecklistView } from './ChecklistView'
+import { DocumentosProcessoCard } from './DocumentosProcessoCard'
 import { HistoricoChecklistCard } from './HistoricoChecklistCard'
 import { PendenciasCard } from './PendenciasCard'
 import { ProgressoProcessual } from './ProgressoProcessual'
@@ -161,6 +162,7 @@ export function ProcessoDetalhePage() {
         </>
       ) : null}
 
+      <DocumentosProcessoCard processoId={processo.id} nomeArquivo={processo.nome_arquivo} />
       <HistoricoChecklistCard processoId={processo.id} />
       <PendenciasCard key={processo.id} processoId={processo.id} />
       <AgendarLeilaoCard processo={processo} />

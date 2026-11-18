@@ -27,6 +27,10 @@ export function listarProcessos(filtros: Partial<FiltrosProcessos> = {}): Promis
   return api.get<ProcessosPaginaOut>(`/processos${params ? `?${params}` : ''}`)
 }
 
+export function baixarPdfOriginal(id: string): Promise<Blob> {
+  return api.baixar(`/processos/${id}/documentos/original`)
+}
+
 export function obterProcesso(id: string): Promise<ProcessoDetalheOut> {
   return api.get<ProcessoDetalheOut>(`/processos/${id}`)
 }

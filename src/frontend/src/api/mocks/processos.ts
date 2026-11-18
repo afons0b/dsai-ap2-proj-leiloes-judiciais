@@ -97,6 +97,7 @@ export const processosHandlers: HttpHandler[] = [
     const processo: ProcessoMock = {
       id: novoId('p'),
       nome_arquivo: arquivo.name,
+      arquivoPdf: arquivo,
       status: 'recebido',
       numero_processo: null,
       vara: null,
@@ -116,6 +117,17 @@ export const processosHandlers: HttpHandler[] = [
     const processo = buscarProcesso(params.id)
     if (!processo) return erro(404, 'Processo não encontrado')
     return HttpResponse.json(toDetalhe(processo))
+  }),
+
+  http.get('/api/processos/:id/documentos/original', ({ params }) => {
+    const bloqueado = exigirSessao()
+    if (bloqueado) return bloqueado
+    const processo = buscarProcesso(params.id)
+    if (!processo) return erro(404, 'Processo não encontrado')
+    if (!processo.arquivoPdf) return erro(404, 'PDF original indisponível')
+    return new HttpResponse(processo.arquivoPdf, {
+      headers: { 'Content-Type': 'application/pdf', 'Cache-Control': 'private, no-store' },
+    })
   }),
 
   http.get('/api/processos/:id/pendencias', ({ params }) => {

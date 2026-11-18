@@ -130,6 +130,17 @@ async def obter(session: AsyncSession, processo_id: UUID) -> Processo:
     return processo
 
 
+async def obter_pdf_original(
+    session: AsyncSession, settings: Settings, processo_id: UUID
+) -> tuple[Path, str]:
+    processo = await obter(session, processo_id)
+    pasta = (settings.MEDIA_ROOT / "processos").resolve()
+    caminho = pasta / f"{processo.id}.pdf"
+    if caminho.resolve() != caminho or not caminho.is_file():
+        raise ErroDominio(404, "PDF original indisponível")
+    return caminho, _nome_seguro(processo.nome_arquivo)
+
+
 def checklist_de(processo: Processo) -> Checklist | None:
     return Checklist.model_validate(processo.checklist.dados) if processo.checklist else None
 
