@@ -3,10 +3,13 @@ import { Link } from 'react-router'
 import { mensagemErro } from '@/api/client'
 import { chavesDashboard, obterDashboard } from '@/api/dashboard'
 import { Alerta } from '@/components/Alerta'
+import { Botao } from '@/components/Botao'
 import { Card } from '@/components/Card'
 import { StatusBadge } from '@/components/StatusBadge'
+import { baixarArquivo } from '@/lib/baixarArquivo'
 import { formatarDataHora, ouTraco } from '@/lib/formatar'
 import { DistribuicaoProcessos } from './DistribuicaoProcessos'
+import { csvDashboard, indicadoresDashboard } from './indicadoresDashboard'
 
 export function DashboardPage() {
   const consulta = useQuery({
@@ -19,18 +22,28 @@ export function DashboardPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        {dados && !consulta.isError ? (
+          <Botao
+            variante="secundario"
+            onClick={() =>
+              baixarArquivo(
+                new Blob([csvDashboard(dados)], { type: 'text/csv;charset=utf-8' }),
+                `indicadores-${dados.referencia_em.slice(0, 10)}.csv`,
+              )
+            }
+          >
+            Exportar indicadores em CSV
+          </Botao>
+        ) : null}
+      </div>
       {consulta.isFetching ? <p className="text-slate-500">Carregando dashboard…</p> : null}
       {consulta.isError ? <Alerta tipo="erro">{mensagemErro(consulta.error)}</Alerta> : null}
       {dados && !consulta.isError ? (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {([
-              ['Total de processos', dados.total_processos],
-              ['Leilões agendados', dados.total_leiloes_agendados],
-              ['Editais gerados', dados.total_editais_gerados],
-              ['Envios bem-sucedidos para marketing', dados.total_envios_marketing_sucesso],
-            ] as const).map(([titulo, valor]) => (
+            {indicadoresDashboard(dados).map(([titulo, valor]) => (
               <Card key={titulo} titulo={titulo}>
                 <p className="text-3xl font-semibold text-blue-700">{valor}</p>
               </Card>
