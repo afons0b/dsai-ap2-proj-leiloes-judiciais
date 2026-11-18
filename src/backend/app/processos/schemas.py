@@ -3,7 +3,7 @@ from datetime import date, datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator
 
 from app.agenda.schemas import LeilaoOut
 
@@ -31,6 +31,35 @@ Ref = Annotated[
         description="Identificador do documento nos autos, ex: 'Id 1308225768' ou 'fl. 284'",
     ),
 ]
+
+
+class FiltrosProcessos(BaseModel):
+    busca: str = Field(default="", max_length=255)
+    status: ProcessoStatus | None = None
+    data_inicio: date | None = None
+    data_fim: date | None = None
+    ordem: Literal["asc", "desc"] = "desc"
+    pagina: int = Field(default=1, ge=1)
+    tamanho_pagina: int = Field(default=20, ge=1, le=100)
+
+    @field_validator("busca", mode="before")
+    @classmethod
+    def normalizar_busca(cls, valor: str) -> str:
+        return valor.strip()
+
+    @field_validator("data_inicio", "data_fim", mode="before")
+    @classmethod
+    def validar_data(cls, valor: str | date | None) -> str | date | None:
+        if isinstance(valor, str) and not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", valor):
+            raise ValueError("data inválida")
+        return valor
+
+    @field_validator("pagina", "tamanho_pagina", mode="before")
+    @classmethod
+    def validar_inteiro(cls, valor: str | int) -> str | int:
+        if isinstance(valor, str) and not re.fullmatch(r"[+-]?[0-9]+", valor):
+            raise ValueError("inteiro inválido")
+        return valor
 
 
 class Advogado(BaseModel):
@@ -130,3 +159,11 @@ class ProcessoDetalheOut(ProcessoOut):
     checklist: Checklist | None
     relatorio: Relatorio | None
     leilao: LeilaoOut | None = None
+
+
+class ProcessosPaginaOut(BaseModel):
+    itens: list[ProcessoOut]
+    total: int
+    pagina: int
+    tamanho_pagina: int
+    total_paginas: int

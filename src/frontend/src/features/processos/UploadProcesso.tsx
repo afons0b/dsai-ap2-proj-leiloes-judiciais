@@ -5,13 +5,16 @@ import { chavesProcessos, enviarProcesso } from '@/api/processos'
 import { Alerta } from '@/components/Alerta'
 import { Botao } from '@/components/Botao'
 
-export function UploadProcesso() {
+export function UploadProcesso({ onEnviado }: { onEnviado?: () => void }) {
   const queryClient = useQueryClient()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const enviar = useMutation({
     mutationFn: enviarProcesso,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: chavesProcessos.lista }),
+    onSuccess: () => {
+      onEnviado?.()
+      return queryClient.invalidateQueries({ queryKey: chavesProcessos.lista })
+    },
   })
 
   function aoEscolher(e: ChangeEvent<HTMLInputElement>) {

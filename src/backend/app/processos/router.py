@@ -1,14 +1,22 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response, UploadFile
+from fastapi import APIRouter, Depends, Request, Response, UploadFile
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Settings, get_settings
 from app.db import get_session
+from app.errors import ErroDominio
 from app.llm import LLMDep
 from app.processos import service
-from app.processos.schemas import Checklist, ProcessoDetalheOut, ProcessoOut
+from app.processos.schemas import (
+    Checklist,
+    FiltrosProcessos,
+    ProcessoDetalheOut,
+    ProcessoOut,
+    ProcessosPaginaOut,
+)
 from app.security.deps import exige_admin, usuario_atual
 
 router = APIRouter(
@@ -32,9 +40,33 @@ async def upload(arquivo: UploadFile, session: SessionDep, settings: SettingsDep
     return ProcessoOut.model_validate(processo)
 
 
-@router.get("", response_model=list[ProcessoOut])
-async def listar(session: SessionDep) -> list[ProcessoOut]:
-    return [ProcessoOut.model_validate(p) for p in await service.listar(session)]
+def filtros_listagem(request: Request) -> FiltrosProcessos:
+    try:
+        filtros = FiltrosProcessos.model_validate(dict(request.query_params))
+    except ValidationError as exc:
+        campo = exc.errors()[0]["loc"][0]
+        raise ErroDominio(422, f"Parâmetro {campo} inválido") from None
+    if filtros.data_inicio and filtros.data_fim and filtros.data_inicio > filtros.data_fim:
+        raise ErroDominio(422, "Data inicial deve ser anterior ou igual à data final")
+    return filtros
+
+
+@router.get(
+    "",
+    response_model=ProcessosPaginaOut,
+    openapi_extra={
+        "parameters": [
+            {"name": nome, "in": "query", "required": False, "schema": schema}
+            for nome, schema in FiltrosProcessos.model_json_schema()["properties"].items()
+        ]
+    },
+)
+async def listar(
+    session: SessionDep,
+    settings: SettingsDep,
+    filtros: Annotated[FiltrosProcessos, Depends(filtros_listagem)],
+) -> ProcessosPaginaOut:
+    return await service.listar_pagina(session, settings, filtros)
 
 
 @router.get("/{processo_id}", response_model=ProcessoDetalheOut)

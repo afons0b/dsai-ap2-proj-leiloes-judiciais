@@ -1,4 +1,5 @@
 import { delay, type HttpHandler, HttpResponse, http } from 'msw'
+import { lerFiltrosProcessos } from '@/api/filtrosProcessos'
 import type { Checklist } from '@/api/types'
 import { db, leilaoAtivo, novoId, type ProcessoMock, toDetalhe, toProcessoOut } from './db'
 import { CHECKLIST_EXEMPLO, RELATORIO_EXEMPLO } from './fixtures'
@@ -7,8 +8,15 @@ import { erro, exigirAdmin, exigirSessao } from './http'
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 const ATRASO_ANALISE_MS = import.meta.env.MODE === 'test' ? 0 : 800
 
-function ordenarRecentes(lista: ProcessoMock[]): ProcessoMock[] {
-  return [...lista].sort((a, b) => Date.parse(b.criado_em) - Date.parse(a.criado_em))
+function diaCadastro(valor: string): string {
+  const partes = new Intl.DateTimeFormat('en', {
+    timeZone: 'America/Belem',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(valor))
+  const obter = (tipo: string) => partes.find((parte) => parte.type === tipo)?.value
+  return `${obter('year')}-${obter('month')}-${obter('day')}`
 }
 
 export function buscarProcesso(id: string | readonly string[] | undefined): ProcessoMock | null {
@@ -16,10 +24,41 @@ export function buscarProcesso(id: string | readonly string[] | undefined): Proc
 }
 
 export const processosHandlers: HttpHandler[] = [
-  http.get('/api/processos', () => {
+  http.get('/api/processos', ({ request }) => {
     const bloqueado = exigirSessao()
     if (bloqueado) return bloqueado
-    return HttpResponse.json(ordenarRecentes(db.processos).map(toProcessoOut))
+    try {
+      const filtros = lerFiltrosProcessos(new URL(request.url).searchParams)
+      const busca = filtros.busca.toLowerCase()
+      const resultados = db.processos
+        .filter((p) => {
+          const dia = diaCadastro(p.criado_em)
+          return (
+            (!busca ||
+              p.nome_arquivo.toLowerCase().includes(busca) ||
+              p.numero_processo?.toLowerCase().includes(busca)) &&
+            (!filtros.status || p.status === filtros.status) &&
+            (!filtros.data_inicio || dia >= filtros.data_inicio) &&
+            (!filtros.data_fim || dia <= filtros.data_fim)
+          )
+        })
+        .sort((a, b) => {
+          const comparacao =
+            Date.parse(a.criado_em) - Date.parse(b.criado_em) ||
+            (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+          return filtros.ordem === 'asc' ? comparacao : -comparacao
+        })
+      const inicio = (filtros.pagina - 1) * filtros.tamanho_pagina
+      return HttpResponse.json({
+        itens: resultados.slice(inicio, inicio + filtros.tamanho_pagina).map(toProcessoOut),
+        total: resultados.length,
+        pagina: filtros.pagina,
+        tamanho_pagina: filtros.tamanho_pagina,
+        total_paginas: Math.ceil(resultados.length / filtros.tamanho_pagina),
+      })
+    } catch (e) {
+      return erro(422, e instanceof Error ? e.message : 'Filtros inválidos')
+    }
   }),
 
   http.post('/api/processos', async ({ request }) => {

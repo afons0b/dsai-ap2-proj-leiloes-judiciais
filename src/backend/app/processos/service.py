@@ -4,8 +4,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import Date, DateTime, cast, func, literal, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import raiseload
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.agenda import service as agenda_service
 from app.agenda.models import Leilao
@@ -19,8 +21,11 @@ from app.processos.prompts import SYSTEM_CHECKLIST, SYSTEM_RELATORIO, user_promp
 from app.processos.schemas import (
     BemPenhorado,
     Checklist,
+    FiltrosProcessos,
     Pendencia,
     ProcessoDetalheOut,
+    ProcessoOut,
+    ProcessosPaginaOut,
     Relatorio,
 )
 
@@ -66,6 +71,52 @@ async def salvar_upload(
 async def listar(session: AsyncSession) -> list[Processo]:
     stmt = select(Processo).order_by(Processo.criado_em.desc())
     return list((await session.execute(stmt)).scalars().all())
+
+
+async def listar_pagina(
+    session: AsyncSession, settings: Settings, filtros: FiltrosProcessos
+) -> ProcessosPaginaOut:
+    criterios: list[ColumnElement[bool]] = []
+    if filtros.busca:
+        criterios.append(
+            or_(
+                Processo.nome_arquivo.icontains(filtros.busca, autoescape=True),
+                Processo.numero_processo.icontains(filtros.busca, autoescape=True),
+            )
+        )
+    if filtros.status is not None:
+        criterios.append(Processo.status == filtros.status)
+    if filtros.data_inicio is not None:
+        inicio = func.timezone(settings.TIMEZONE, cast(literal(filtros.data_inicio, Date), DateTime))
+        criterios.append(Processo.criado_em >= inicio)
+    if filtros.data_fim is not None:
+        fim = func.timezone(settings.TIMEZONE, cast(literal(filtros.data_fim, Date) + 1, DateTime))
+        criterios.append(Processo.criado_em < fim)
+    total = await session.scalar(select(func.count()).select_from(Processo).where(*criterios)) or 0
+    offset = (filtros.pagina - 1) * filtros.tamanho_pagina
+    itens: list[ProcessoOut] = []
+    if offset < total:
+        ordem = (
+            (Processo.criado_em.asc(), Processo.id.asc())
+            if filtros.ordem == "asc"
+            else (Processo.criado_em.desc(), Processo.id.desc())
+        )
+        stmt = (
+            select(Processo)
+            .options(raiseload("*"))
+            .where(*criterios)
+            .order_by(*ordem)
+            .offset(offset)
+            .limit(filtros.tamanho_pagina)
+        )
+        itens = [ProcessoOut.model_validate(p) for p in (await session.scalars(stmt)).all()]
+    return ProcessosPaginaOut(
+        itens=itens,
+        total=total,
+        pagina=filtros.pagina,
+        tamanho_pagina=filtros.tamanho_pagina,
+        total_paginas=(total + filtros.tamanho_pagina - 1) // filtros.tamanho_pagina,
+    )
 
 
 async def obter(session: AsyncSession, processo_id: UUID) -> Processo:

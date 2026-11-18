@@ -32,6 +32,24 @@ export type ProcessoOut = {
   analisado_em: string | null
 }
 
+export type FiltrosProcessos = {
+  busca: string
+  status?: ProcessoStatus
+  data_inicio?: string
+  data_fim?: string
+  ordem: 'asc' | 'desc'
+  pagina: number
+  tamanho_pagina: number
+}
+
+export type ProcessosPaginaOut = {
+  itens: ProcessoOut[]
+  total: number
+  pagina: number
+  tamanho_pagina: number
+  total_paginas: number
+}
+
 export type Advogado = { nome: string; oab: string | null; ref: string | null }
 
 export type Parte = { nome: string; cpf_cnpj: string | null; advogados: Advogado[] }

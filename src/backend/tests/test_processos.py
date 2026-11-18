@@ -88,7 +88,7 @@ async def test_listar_ordena_mais_recente_primeiro(cliente_logado: AsyncClient) 
     segundo = (await upload(cliente_logado, nome="b.pdf")).json()["id"]
     resposta = await cliente_logado.get("/api/processos")
     assert resposta.status_code == 200
-    ids = [p["id"] for p in resposta.json()]
+    ids = [p["id"] for p in resposta.json()["itens"]]
     assert ids.index(segundo) < ids.index(primeiro)
 
 

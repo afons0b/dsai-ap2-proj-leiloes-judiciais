@@ -1,13 +1,22 @@
 import { api } from './client'
-import type { Checklist, ProcessoDetalheOut, ProcessoOut } from './types'
+import { parametrosProcessos } from './filtrosProcessos'
+import type {
+  Checklist,
+  FiltrosProcessos,
+  ProcessoDetalheOut,
+  ProcessoOut,
+  ProcessosPaginaOut,
+} from './types'
 
 export const chavesProcessos = {
   lista: ['processos'] as const,
+  pagina: (filtros: FiltrosProcessos) => ['processos', 'lista', filtros] as const,
   detalhe: (id: string) => ['processos', id] as const,
 }
 
-export function listarProcessos(): Promise<ProcessoOut[]> {
-  return api.get<ProcessoOut[]>('/processos')
+export function listarProcessos(filtros: Partial<FiltrosProcessos> = {}): Promise<ProcessosPaginaOut> {
+  const params = parametrosProcessos(filtros).toString()
+  return api.get<ProcessosPaginaOut>(`/processos${params ? `?${params}` : ''}`)
 }
 
 export function obterProcesso(id: string): Promise<ProcessoDetalheOut> {
