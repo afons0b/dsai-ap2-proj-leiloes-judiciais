@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useParams } from 'react-router'
 import { mensagemErro } from '@/api/client'
+import { chavesDashboard } from '@/api/dashboard'
 import { analisarProcesso, chavesProcessos, obterProcesso, salvarChecklist } from '@/api/processos'
 import type { Checklist } from '@/api/types'
 import { Alerta } from '@/components/Alerta'
@@ -37,11 +38,15 @@ export function ProcessoDetalhePage() {
     onError: () => {
       void queryClient.invalidateQueries({ queryKey: chavesProcessos.detalhe(id) })
     },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
+    },
   })
 
   const salvar = useMutation({
     mutationFn: (checklist: Checklist) => salvarChecklist(id, checklist),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
       setEditando(false)
       void queryClient.invalidateQueries({ queryKey: chavesProcessos.detalhe(id) })
       void queryClient.invalidateQueries({ queryKey: chavesProcessos.lista })

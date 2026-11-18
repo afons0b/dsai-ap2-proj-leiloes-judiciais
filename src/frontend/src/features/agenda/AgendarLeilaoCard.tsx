@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { agendarLeilao, cancelarLeilao, chavesAgenda, obterSugestao } from '@/api/agenda'
 import { mensagemErro } from '@/api/client'
+import { chavesDashboard } from '@/api/dashboard'
 import { chavesProcessos } from '@/api/processos'
 import type { LeilaoCreate, LeilaoOut, ProcessoDetalheOut } from '@/api/types'
 import { Alerta } from '@/components/Alerta'
@@ -71,6 +72,7 @@ export function AgendarLeilaoCard({ processo }: Props) {
   })
 
   function invalidar() {
+    void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
     void queryClient.invalidateQueries({ queryKey: chavesProcessos.detalhe(processo.id) })
     void queryClient.invalidateQueries({ queryKey: chavesAgenda.raiz })
   }

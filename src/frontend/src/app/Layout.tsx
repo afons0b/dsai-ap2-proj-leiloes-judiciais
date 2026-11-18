@@ -31,6 +31,9 @@ export function Layout() {
           className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 text-sm"
         >
           <span className="font-semibold">Leilões Judiciais</span>
+          <NavLink to="/dashboard" className={classeLink}>
+            Dashboard
+          </NavLink>
           <NavLink to="/" end className={classeLink}>
             Processos
           </NavLink>

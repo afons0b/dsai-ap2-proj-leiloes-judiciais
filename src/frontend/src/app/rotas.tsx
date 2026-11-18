@@ -3,6 +3,7 @@ import { AgendaPage } from '@/features/agenda/AgendaPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RotaAdmin } from '@/features/auth/RotaAdmin'
 import { RotaProtegida } from '@/features/auth/RotaProtegida'
+import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { MarketingPage } from '@/features/marketing/MarketingPage'
 import { ProcessoDetalhePage } from '@/features/processos/ProcessoDetalhePage'
 import { ProcessosPage } from '@/features/processos/ProcessosPage'
@@ -19,6 +20,7 @@ export const rotas: RouteObject[] = [
         element: <Layout />,
         children: [
           { path: '/', element: <ProcessosPage /> },
+          { path: '/dashboard', element: <DashboardPage /> },
           { path: '/processos/:id', element: <ProcessoDetalhePage /> },
           { path: '/agenda', element: <AgendaPage /> },
           { path: '/marketing', element: <MarketingPage /> },

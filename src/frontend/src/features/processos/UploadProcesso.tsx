@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { type ChangeEvent, useRef } from 'react'
 import { mensagemErro } from '@/api/client'
+import { chavesDashboard } from '@/api/dashboard'
 import { chavesProcessos, enviarProcesso } from '@/api/processos'
 import { Alerta } from '@/components/Alerta'
 import { Botao } from '@/components/Botao'
@@ -12,6 +13,7 @@ export function UploadProcesso({ onEnviado }: { onEnviado?: () => void }) {
   const enviar = useMutation({
     mutationFn: enviarProcesso,
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
       onEnviado?.()
       return queryClient.invalidateQueries({ queryKey: chavesProcessos.lista })
     },

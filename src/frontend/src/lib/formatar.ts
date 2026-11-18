@@ -20,9 +20,12 @@ export function formatarData(iso: string | null): string {
   return dataCurta.format(new Date(ano, mes - 1, dia))
 }
 
-export function formatarDataHora(iso: string | null): string {
+export function formatarDataHora(iso: string | null, timeZone?: string): string {
   if (!iso) return TRACO
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return TRACO
-  return dataHoraCurta.format(d).replace(/ /g, ' ')
+  const formato = timeZone
+    ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone })
+    : dataHoraCurta
+  return formato.format(d).replace(/ /g, ' ')
 }

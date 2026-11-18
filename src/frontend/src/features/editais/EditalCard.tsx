@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import Markdown from 'react-markdown'
 import { mensagemErro } from '@/api/client'
+import { chavesDashboard } from '@/api/dashboard'
 import {
   atualizarEdital,
   chavesEditais,
@@ -70,6 +71,7 @@ export function EditalCard({ processo }: Props) {
   const gerar = useMutation({
     mutationFn: () => gerarEdital(leilao?.id ?? ''),
     onSuccess: (novo) => {
+      void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
       queryClient.setQueryData(chavesEditais.detalhe(novo.id), novo)
       setEditando(false)
       void queryClient.invalidateQueries({ queryKey: chavesProcessos.detalhe(processo.id) })

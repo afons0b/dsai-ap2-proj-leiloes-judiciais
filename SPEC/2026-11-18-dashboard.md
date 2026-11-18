@@ -1,6 +1,6 @@
 # Dashboard gerencial
 
-Data: 2026-11-18. Status: proposta para revisão; não implementada.
+Data: 2026-11-18. Status: aprovada e implementada; execução E2E pendente.
 
 ## 1. Objetivo e escopo
 
@@ -8,7 +8,7 @@ Apresentar uma visão consolidada dos registros atuais do banco, com indicadores
 calculados no backend, independentemente de `GET /api/processos` e sua paginação.
 Disponível para `admin` e `operador`, conforme as permissões atuais de leitura.
 
-Decisões propostas: contar cada versão persistida de edital; apresentar até cinco
+Decisões aprovadas: contar cada versão persistida de edital; apresentar até cinco
 leilões distintos, considerando a próxima etapa ainda não vencida de cada um.
 
 Fora do escopo: filtros por período, histórico de indicadores, exportação,
@@ -144,10 +144,9 @@ ProximoLeilaoOut {
 | CA10 | Carregamento e erro são distintos de vazio; entrar/retornar consulta dados atualizados; mutações relevantes invalidam o dashboard; página funciona por teclado e em telas estreitas. |
 | CA11 | Nenhum consumidor do dashboard depende de `GET /api/processos`; contrato MCP, listagem e demais fluxos permanecem intactos; MSW reproduz o contrato. |
 
-Validação prevista para a implementação: testes de API/serviço com PostgreSQL
-isolado e relógio controlado, testes de UI com MSW e cenário E2E com backend real,
-`LLM_PROVIDER=fake` e `EMAIL_BACKEND=file`. Nenhum teste é criado ou executado nesta
-etapa de especificação.
+Validação: testes de API/serviço com PostgreSQL isolado e relógio controlado e
+testes de UI com MSW. Cenário E2E criado para backend real, `LLM_PROVIDER=fake` e
+`EMAIL_BACKEND=file`; sua execução fica pendente, conforme restrições da sessão.
 
 ## 6. Referências locais
 

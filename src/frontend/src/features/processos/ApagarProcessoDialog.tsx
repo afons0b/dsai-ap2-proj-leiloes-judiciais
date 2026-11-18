@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { mensagemErro } from '@/api/client'
+import { chavesDashboard } from '@/api/dashboard'
 import { chavesProcessos, excluirProcesso } from '@/api/processos'
 import type { ProcessoOut } from '@/api/types'
 import { Alerta } from '@/components/Alerta'
@@ -14,6 +15,7 @@ export function ApagarProcessoDialog({ processo, onFechar }: Props) {
   const apagar = useMutation({
     mutationFn: excluirProcesso,
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
       void queryClient.invalidateQueries({ queryKey: chavesProcessos.lista })
       onFechar()
     },

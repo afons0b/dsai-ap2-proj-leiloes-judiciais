@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { mensagemErro } from '@/api/client'
+import { chavesDashboard } from '@/api/dashboard'
 import { chavesMarketing, enviarParaMarketing } from '@/api/marketing'
 import type { ProcessoDetalheOut } from '@/api/types'
 import { Alerta } from '@/components/Alerta'
@@ -17,6 +18,7 @@ export function EnviarMarketingCard({ processo }: Props) {
   const enviar = useMutation({
     mutationFn: () => enviarParaMarketing(leilao?.id ?? ''),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
       void queryClient.invalidateQueries({ queryKey: chavesMarketing.envios })
     },
   })

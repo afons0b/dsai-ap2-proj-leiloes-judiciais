@@ -13,6 +13,7 @@ from starlette.routing import Route
 from app import errors
 from app.agenda.router import router as agenda_router
 from app.config import get_settings
+from app.dashboard.router import router as dashboard_router
 from app.db import get_session
 from app.editais.router import router as editais_router
 from app.logging import RequestLogMiddleware, configurar_logging
@@ -63,6 +64,7 @@ def create_app() -> FastAPI:
     app.include_router(agenda_router)
     app.include_router(editais_router)
     app.include_router(marketing_router)
+    app.include_router(dashboard_router)
     if app_mcp is not None:
         app.router.routes.append(Route(ROTA_MCP, ExigeBearer(app_mcp, settings.MCP_TOKEN)))
 

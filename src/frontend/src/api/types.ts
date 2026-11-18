@@ -50,6 +50,31 @@ export type ProcessosPaginaOut = {
   total_paginas: number
 }
 
+export type ProcessosPorStatus = Record<ProcessoStatus, number>
+
+export type ProximoLeilaoOut = {
+  id: string
+  processo_id: string
+  nome_arquivo: string
+  numero_processo: string | null
+  primeiro_leilao_em: string
+  segundo_leilao_em: string
+  proximo_leilao_em: string
+  etapa: 'primeiro' | 'segundo'
+}
+
+export type DashboardOut = {
+  referencia_em: string
+  timezone: string
+  total_processos: number
+  processos_por_status: ProcessosPorStatus
+  total_leiloes_agendados: number
+  total_editais_gerados: number
+  total_envios_marketing_sucesso: number
+  processos_recentes: ProcessoOut[]
+  proximos_leiloes: ProximoLeilaoOut[]
+}
+
 export type Advogado = { nome: string; oab: string | null; ref: string | null }
 
 export type Parte = { nome: string; cpf_cnpj: string | null; advogados: Advogado[] }
