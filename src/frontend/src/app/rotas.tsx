@@ -7,6 +7,7 @@ import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { MarketingPage } from '@/features/marketing/MarketingPage'
 import { ProcessoDetalhePage } from '@/features/processos/ProcessoDetalhePage'
 import { ProcessosPage } from '@/features/processos/ProcessosPage'
+import { RelatorioImpressaoPage } from '@/features/processos/RelatorioImpressaoPage'
 import { UsuariosPage } from '@/features/usuarios/UsuariosPage'
 import { Layout } from './Layout'
 import { NaoEncontradaPage } from './NaoEncontradaPage'
@@ -22,6 +23,7 @@ export const rotas: RouteObject[] = [
           { path: '/', element: <ProcessosPage /> },
           { path: '/dashboard', element: <DashboardPage /> },
           { path: '/processos/:id', element: <ProcessoDetalhePage /> },
+          { path: '/processos/:id/relatorio', element: <RelatorioImpressaoPage /> },
           { path: '/agenda', element: <AgendaPage /> },
           { path: '/marketing', element: <MarketingPage /> },
           {

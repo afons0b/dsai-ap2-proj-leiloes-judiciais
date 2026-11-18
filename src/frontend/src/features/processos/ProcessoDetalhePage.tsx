@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { mensagemErro } from '@/api/client'
 import { chavesDashboard } from '@/api/dashboard'
 import { analisarProcesso, chavesProcessos, obterProcesso, salvarChecklist } from '@/api/processos'
@@ -147,7 +147,17 @@ export function ProcessoDetalhePage() {
       {processo.relatorio ? (
         <>
           <AvisoIA />
-          <RelatorioView relatorio={processo.relatorio} />
+          <RelatorioView
+            relatorio={processo.relatorio}
+            acoes={
+              <Link
+                to={`/processos/${id}/relatorio`}
+                className="text-sm text-blue-700 hover:underline"
+              >
+                Exportar relatório
+              </Link>
+            }
+          />
         </>
       ) : null}
 
