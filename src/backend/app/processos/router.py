@@ -11,14 +11,16 @@ from app.errors import ErroDominio
 from app.llm import LLMDep
 from app.processos import service
 from app.processos.schemas import (
+    AprovacaoChecklistOut,
+    AprovarChecklistIn,
     Checklist,
     FiltrosProcessos,
     Pendencia,
-    ProcessoDetalheOut,
+    ProcessoDetalheHttpOut,
     ProcessoOut,
     ProcessosPaginaOut,
 )
-from app.security.deps import exige_admin, usuario_atual
+from app.security.deps import UsuarioAtual, exige_admin, usuario_atual
 
 router = APIRouter(
     prefix="/api/processos", tags=["processos"], dependencies=[Depends(usuario_atual)]
@@ -70,9 +72,9 @@ async def listar(
     return await service.listar_pagina(session, settings, filtros)
 
 
-@router.get("/{processo_id}", response_model=ProcessoDetalheOut)
-async def detalhe(processo_id: UUID, session: SessionDep) -> ProcessoDetalheOut:
-    return await service.detalhe(session, processo_id)
+@router.get("/{processo_id}", response_model=ProcessoDetalheHttpOut)
+async def detalhe(processo_id: UUID, session: SessionDep) -> ProcessoDetalheHttpOut:
+    return await service.detalhe_http(session, processo_id)
 
 
 @router.get("/{processo_id}/pendencias", response_model=list[Pendencia])
@@ -80,12 +82,19 @@ async def listar_pendencias(processo_id: UUID, session: SessionDep) -> list[Pend
     return await service.listar_pendencias(session, processo_id)
 
 
-@router.post("/{processo_id}/analisar", response_model=ProcessoDetalheOut)
+@router.post("/{processo_id}/analisar", response_model=ProcessoDetalheHttpOut)
 async def analisar(
     processo_id: UUID, session: SessionDep, settings: SettingsDep, llm: LLMDep
-) -> ProcessoDetalheOut:
+) -> ProcessoDetalheHttpOut:
     processo = await service.analisar(session, settings, llm, processo_id)
-    return await service.detalhe(session, processo.id)
+    return await service.detalhe_http(session, processo.id)
+
+
+@router.post("/{processo_id}/checklist/aprovacao", response_model=AprovacaoChecklistOut)
+async def aprovar_checklist(
+    processo_id: UUID, entrada: AprovarChecklistIn, session: SessionDep, usuario: UsuarioAtual
+) -> AprovacaoChecklistOut:
+    return await service.aprovar_checklist(session, processo_id, entrada.revisao, usuario.username)
 
 
 @router.put("/{processo_id}/checklist", response_model=Checklist)

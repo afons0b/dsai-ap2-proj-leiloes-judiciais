@@ -135,6 +135,16 @@ class Relatorio(BaseModel):
     etapas: list[Etapa] = Field(default_factory=list)
 
 
+class AprovarChecklistIn(BaseModel):
+    revisao: UUID
+
+
+class AprovacaoChecklistOut(BaseModel):
+    revisao: UUID | None
+    aprovado_por: str | None = None
+    aprovado_em: datetime | None = None
+
+
 class Pendencia(BaseModel):
     gravidade: Gravidade
     campo: str
@@ -159,6 +169,10 @@ class ProcessoDetalheOut(ProcessoOut):
     checklist: Checklist | None
     relatorio: Relatorio | None
     leilao: LeilaoOut | None = None
+
+
+class ProcessoDetalheHttpOut(ProcessoDetalheOut):
+    aprovacao_checklist: AprovacaoChecklistOut
 
 
 class ProcessosPaginaOut(BaseModel):

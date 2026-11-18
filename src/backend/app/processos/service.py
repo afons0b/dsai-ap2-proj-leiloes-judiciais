@@ -2,9 +2,9 @@ import asyncio
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from sqlalchemy import Date, DateTime, cast, func, literal, or_, select
+from sqlalchemy import Date, DateTime, cast, func, literal, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import raiseload
 from sqlalchemy.sql.elements import ColumnElement
@@ -19,10 +19,12 @@ from app.pdf.extract import extract_text
 from app.processos.models import ChecklistDB, Processo, RelatorioDB
 from app.processos.prompts import SYSTEM_CHECKLIST, SYSTEM_RELATORIO, user_prompt
 from app.processos.schemas import (
+    AprovacaoChecklistOut,
     BemPenhorado,
     Checklist,
     FiltrosProcessos,
     Pendencia,
+    ProcessoDetalheHttpOut,
     ProcessoDetalheOut,
     ProcessoOut,
     ProcessosPaginaOut,
@@ -156,6 +158,15 @@ async def detalhe(session: AsyncSession, processo_id: UUID) -> ProcessoDetalheOu
     return detalhe_out(processo, leilao)
 
 
+async def detalhe_http(session: AsyncSession, processo_id: UUID) -> ProcessoDetalheHttpOut:
+    processo = await obter(session, processo_id)
+    leilao = await agenda_service.leilao_ativo(session, processo.id)
+    return ProcessoDetalheHttpOut(
+        **detalhe_out(processo, leilao).model_dump(),
+        aprovacao_checklist=aprovacao_de(processo),
+    )
+
+
 ONUS: tuple[tuple[str, str], ...] = (
     ("hipoteca", "hipoteca"),
     ("enfiteuse", "enfiteuse"),
@@ -247,6 +258,47 @@ async def listar_pendencias(session: AsyncSession, processo_id: UUID) -> list[Pe
     return pendencias(checklist_de(processo))
 
 
+def aprovacao_de(processo: Processo) -> AprovacaoChecklistOut:
+    checklist = processo.checklist
+    if checklist is None or processo.status == "analisando":
+        return AprovacaoChecklistOut(revisao=None)
+
+    revisao = checklist.revisao or checklist.id
+    if checklist.revisao_aprovada == revisao:
+        return AprovacaoChecklistOut(
+            revisao=revisao,
+            aprovado_por=checklist.aprovado_por,
+            aprovado_em=checklist.aprovado_em,
+        )
+    return AprovacaoChecklistOut(revisao=revisao)
+
+
+async def aprovar_checklist(
+    session: AsyncSession, processo_id: UUID, revisao: UUID, username: str
+) -> AprovacaoChecklistOut:
+    await session.execute(select(Processo.id).where(Processo.id == processo_id).with_for_update())
+    atual = aprovacao_de(await obter(session, processo_id))
+    if atual.revisao != revisao:
+        raise ErroDominio(409, "O checklist mudou ou está indisponível para aprovação")
+    if atual.aprovado_em is not None:
+        return atual
+
+    agora = datetime.now(UTC)
+    registro = await session.scalar(
+        update(ChecklistDB)
+        .where(
+            ChecklistDB.processo_id == processo_id,
+            func.coalesce(ChecklistDB.revisao, ChecklistDB.id) == revisao,
+        )
+        .values(revisao_aprovada=revisao, aprovado_por=username, aprovado_em=agora)
+        .returning(ChecklistDB.id)
+    )
+    if registro is None:
+        raise ErroDominio(409, "O checklist mudou. Revise novamente antes de aprovar")
+    await session.commit()
+    return AprovacaoChecklistOut(revisao=revisao, aprovado_por=username, aprovado_em=agora)
+
+
 async def _marcar_erro(session: AsyncSession, processo: Processo, mensagem: str) -> None:
     processo.status = "erro"
     processo.erro = mensagem
@@ -258,9 +310,10 @@ async def _gravar_checklist(
 ) -> None:
     dados = checklist.model_dump(mode="json")
     if processo.checklist is None:
-        processo.checklist = ChecklistDB(dados=dados)
+        processo.checklist = ChecklistDB(dados=dados, revisao=uuid4())
     else:
         processo.checklist.dados = dados
+        processo.checklist.revisao = uuid4()
     processo.numero_processo = checklist.numero_processo
     processo.vara = checklist.vara
 

@@ -379,3 +379,26 @@ async def test_pendencias_refletem_o_checklist_salvo(cliente_operador: AsyncClie
         item["campo"] for item in resposta.json() if item["gravidade"] == "bloqueia"
     ]
     assert impedimentos == ["executados", "bens"]
+
+
+async def test_aprovacao_do_checklist_expira_apos_edicao(
+    cliente_operador: AsyncClient, processo_analisado: Processo
+) -> None:
+    url = f"/api/processos/{processo_analisado.id}"
+    detalhe = (await cliente_operador.get(url)).json()
+    revisao = detalhe["aprovacao_checklist"]["revisao"]
+    aprovar = f"{url}/checklist/aprovacao"
+
+    resposta = await cliente_operador.post(aprovar, json={"revisao": revisao})
+    assert resposta.status_code == 200
+    assert resposta.json()["aprovado_por"] == "operador"
+    assert resposta.json()["aprovado_em"]
+    repetida = await cliente_operador.post(aprovar, json={"revisao": revisao})
+    assert repetida.json() == resposta.json()
+
+    checklist = {**detalhe["checklist"], "vara": "Vara revisada"}
+    assert (await cliente_operador.put(f"{url}/checklist", json=checklist)).status_code == 200
+    assert (await cliente_operador.post(aprovar, json={"revisao": revisao})).status_code == 409
+    atual = (await cliente_operador.get(url)).json()["aprovacao_checklist"]
+    assert atual["revisao"] != revisao
+    assert atual["aprovado_em"] is None

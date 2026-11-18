@@ -1,4 +1,5 @@
 import type {
+  AprovacaoChecklist,
   Checklist,
   EditalOut,
   EnvioOut,
@@ -16,6 +17,8 @@ export type UsuarioMock = UsuarioOut & { password: string }
 export type ProcessoMock = ProcessoOut & {
   checklist: Checklist | null
   relatorio: Relatorio | null
+  revisaoChecklist?: string
+  aprovacaoChecklist?: AprovacaoChecklist
 }
 export type LeilaoMock = {
   id: string
@@ -202,6 +205,14 @@ export function toDetalhe(p: ProcessoMock): ProcessoDetalheOut {
   return {
     ...toProcessoOut(p),
     checklist: p.checklist,
+    aprovacao_checklist: {
+      revisao: null,
+      aprovado_por: null,
+      aprovado_em: null,
+      ...(p.checklist && p.status !== 'analisando'
+        ? { revisao: p.revisaoChecklist ?? p.id, ...p.aprovacaoChecklist }
+        : {}),
+    },
     relatorio: p.relatorio,
     leilao: leilao ? toLeilaoOut(leilao) : null,
   }

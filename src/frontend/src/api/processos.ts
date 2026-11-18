@@ -1,6 +1,7 @@
 import { api } from './client'
 import { parametrosProcessos } from './filtrosProcessos'
 import type {
+  AprovacaoChecklist,
   Checklist,
   FiltrosProcessos,
   Pendencia,
@@ -40,6 +41,10 @@ export function enviarProcesso(arquivo: File): Promise<ProcessoOut> {
 
 export function analisarProcesso(id: string): Promise<ProcessoDetalheOut> {
   return api.post<ProcessoDetalheOut>(`/processos/${id}/analisar`)
+}
+
+export function aprovarChecklist(id: string, revisao: string): Promise<AprovacaoChecklist> {
+  return api.post<AprovacaoChecklist>(`/processos/${id}/checklist/aprovacao`, { revisao })
 }
 
 export function salvarChecklist(id: string, checklist: Checklist): Promise<Checklist> {

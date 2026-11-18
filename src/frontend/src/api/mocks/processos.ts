@@ -1,7 +1,15 @@
 import { delay, type HttpHandler, HttpResponse, http } from 'msw'
 import { lerFiltrosProcessos } from '@/api/filtrosProcessos'
 import type { Checklist } from '@/api/types'
-import { db, leilaoAtivo, novoId, type ProcessoMock, toDetalhe, toProcessoOut } from './db'
+import {
+  db,
+  leilaoAtivo,
+  novoId,
+  type ProcessoMock,
+  toDetalhe,
+  toProcessoOut,
+  usuarioLogado,
+} from './db'
 import { CHECKLIST_EXEMPLO, RELATORIO_EXEMPLO } from './fixtures'
 import { erro, exigirAdmin, exigirSessao } from './http'
 import { calcularPendenciasMock } from './regrasPendencias'
@@ -22,6 +30,12 @@ function diaCadastro(valor: string): string {
 
 export function buscarProcesso(id: string | readonly string[] | undefined): ProcessoMock | null {
   return db.processos.find((p) => p.id === String(id)) ?? null
+}
+
+function substituirChecklist(processo: ProcessoMock, checklist: Checklist) {
+  processo.checklist = checklist
+  processo.revisaoChecklist = novoId('revisao')
+  delete processo.aprovacaoChecklist
 }
 
 export const processosHandlers: HttpHandler[] = [
@@ -116,7 +130,7 @@ export const processosHandlers: HttpHandler[] = [
       return erro(422, 'PDF sem camada de texto')
     }
     const checklist = structuredClone(CHECKLIST_EXEMPLO)
-    processo.checklist = checklist
+    substituirChecklist(processo, checklist)
     processo.relatorio = structuredClone(RELATORIO_EXEMPLO)
     processo.numero_processo = checklist.numero_processo
     processo.vara = checklist.vara
@@ -126,13 +140,33 @@ export const processosHandlers: HttpHandler[] = [
     return HttpResponse.json(toDetalhe(processo))
   }),
 
+  http.post('/api/processos/:id/checklist/aprovacao', async ({ params, request }) => {
+    const usuario = usuarioLogado()
+    if (!usuario) return erro(401, 'Não autenticado')
+    const processo = buscarProcesso(params.id)
+    if (!processo) return erro(404, 'Processo não encontrado')
+    const entrada = (await request.json()) as { revisao: string }
+    const atual = toDetalhe(processo).aprovacao_checklist
+    if (!atual?.revisao || atual.revisao !== entrada.revisao) {
+      return erro(409, 'O checklist mudou ou está indisponível para aprovação')
+    }
+    if (!atual.aprovado_em) {
+      processo.aprovacaoChecklist = {
+        revisao: atual.revisao,
+        aprovado_por: usuario.username,
+        aprovado_em: new Date().toISOString(),
+      }
+    }
+    return HttpResponse.json(processo.aprovacaoChecklist ?? atual)
+  }),
+
   http.put('/api/processos/:id/checklist', async ({ params, request }) => {
     const bloqueado = exigirSessao()
     if (bloqueado) return bloqueado
     const processo = buscarProcesso(params.id)
     if (!processo) return erro(404, 'Processo não encontrado')
     const checklist = (await request.json()) as Checklist
-    processo.checklist = checklist
+    substituirChecklist(processo, checklist)
     processo.numero_processo = checklist.numero_processo
     processo.vara = checklist.vara
     return HttpResponse.json(checklist)

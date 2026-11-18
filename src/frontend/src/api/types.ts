@@ -160,9 +160,16 @@ export type BloqueioOut = { id: string; data: string; motivo: string }
 export type BloqueioCreate = { data: string; motivo: string }
 export type FeriadoOut = { data: string; motivo: string }
 
+export type AprovacaoChecklist = {
+  revisao: string | null
+  aprovado_por: string | null
+  aprovado_em: string | null
+}
+
 export type ProcessoDetalheOut = ProcessoOut & {
   checklist: Checklist | null
   relatorio: Relatorio | null
+  aprovacao_checklist?: AprovacaoChecklist | null
   leilao: LeilaoOut | null
 }
 

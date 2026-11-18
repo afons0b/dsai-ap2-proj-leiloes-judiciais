@@ -14,6 +14,7 @@ import { AgendarLeilaoCard } from '@/features/agenda/AgendarLeilaoCard'
 import { EditalCard } from '@/features/editais/EditalCard'
 import { EnviarMarketingCard } from '@/features/marketing/EnviarMarketingCard'
 import { ouTraco } from '@/lib/formatar'
+import { AprovacaoChecklistCard } from './AprovacaoChecklistCard'
 import { ChecklistForm } from './ChecklistForm'
 import { ChecklistView } from './ChecklistView'
 import { PendenciasCard } from './PendenciasCard'
@@ -53,7 +54,15 @@ export function ProcessoDetalhePage() {
       salvarChecklist(processoId, checklist),
     onSuccess: (confirmado, { processoId }) => {
       queryClient.setQueryData<ProcessoDetalheOut>(chavesProcessos.detalhe(processoId), (atual) =>
-        atual ? { ...atual, checklist: confirmado, numero_processo: confirmado.numero_processo, vara: confirmado.vara } : atual,
+        atual
+          ? {
+              ...atual,
+              checklist: confirmado,
+              numero_processo: confirmado.numero_processo,
+              vara: confirmado.vara,
+              aprovacao_checklist: null,
+            }
+          : atual,
       )
       void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
       setEditandoId((atual) => atual === processoId ? null : atual)
@@ -124,6 +133,15 @@ export function ProcessoDetalhePage() {
           <p className="text-sm text-slate-500">Analise o processo para preencher o checklist.</p>
         </Card>
       )}
+
+      {editandoId !== id && processo.aprovacao_checklist?.revisao ? (
+        <AprovacaoChecklistCard
+          key={processo.aprovacao_checklist.revisao}
+          processoId={processo.id}
+          aprovacao={processo.aprovacao_checklist}
+          desabilitada={analisar.isPending || consulta.isFetching}
+        />
+      ) : null}
 
       {processo.relatorio ? (
         <>

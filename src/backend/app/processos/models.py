@@ -42,6 +42,11 @@ class ChecklistDB(IdCriadoEmMixin, Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
+    revisao: Mapped[UUID | None]
+    revisao_aprovada: Mapped[UUID | None]
+    aprovado_por: Mapped[str | None] = mapped_column(Text)
+    aprovado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
     processo: Mapped[Processo] = relationship(back_populates="checklist")
 
 
