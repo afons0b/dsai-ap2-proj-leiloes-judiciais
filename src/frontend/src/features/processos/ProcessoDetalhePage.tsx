@@ -16,6 +16,7 @@ import { EnviarMarketingCard } from '@/features/marketing/EnviarMarketingCard'
 import { ouTraco } from '@/lib/formatar'
 import { ChecklistForm } from './ChecklistForm'
 import { ChecklistView } from './ChecklistView'
+import { PendenciasCard } from './PendenciasCard'
 import { ProgressoProcessual } from './ProgressoProcessual'
 import { RelatorioView } from './RelatorioView'
 
@@ -131,6 +132,7 @@ export function ProcessoDetalhePage() {
         </>
       ) : null}
 
+      <PendenciasCard key={processo.id} processoId={processo.id} />
       <AgendarLeilaoCard processo={processo} />
       <EditalCard processo={processo} />
       <EnviarMarketingCard processo={processo} />
