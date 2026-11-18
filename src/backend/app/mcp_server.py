@@ -64,11 +64,9 @@ async def obter_caderno(processo_id: ProcessoId) -> ProcessoDetalheOut:
 async def pendencias_pre_leilao(processo_id: ProcessoId) -> list[Pendencia]:
     try:
         async with abrir_sessao() as session:
-            processo = await service.obter(session, processo_id)
-            checklist = service.checklist_de(processo)
+            return await service.listar_pendencias(session, processo_id)
     except ErroDominio as exc:
         raise ToolError(exc.detail) from exc
-    return service.pendencias(checklist)
 
 
 def criar_servidor() -> MCPServer:

@@ -242,6 +242,11 @@ def pendencias(checklist: Checklist | None) -> list[Pendencia]:
     return itens
 
 
+async def listar_pendencias(session: AsyncSession, processo_id: UUID) -> list[Pendencia]:
+    processo = await obter(session, processo_id)
+    return pendencias(checklist_de(processo))
+
+
 async def _marcar_erro(session: AsyncSession, processo: Processo, mensagem: str) -> None:
     processo.status = "erro"
     processo.erro = mensagem
