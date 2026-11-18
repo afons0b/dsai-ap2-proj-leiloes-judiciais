@@ -2,8 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { logout } from '@/api/auth'
+import { Alerta } from '@/components/Alerta'
+import { ConfirmarDescarte } from '@/components/ConfirmarDescarte'
 import { MinhaSenhaDialog } from '@/features/auth/MinhaSenhaDialog'
 import { useUsuario } from '@/features/auth/useUsuario'
+import { useProtecaoEdicao } from './useProtecaoEdicao'
 
 function classeLink({ isActive }: { isActive: boolean }): string {
   return isActive ? 'font-semibold text-blue-700' : 'text-slate-700 hover:text-blue-700'
@@ -14,6 +17,7 @@ export function Layout() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [senhaAberta, setSenhaAberta] = useState(false)
+  const protecao = useProtecaoEdicao()
 
   const sair = useMutation({
     mutationFn: logout,
@@ -54,15 +58,19 @@ export function Layout() {
           <button type="button" onClick={() => setSenhaAberta(true)} className="underline">
             Minha senha
           </button>
-          <button type="button" onClick={() => sair.mutate()} className="underline">
+          <button type="button" disabled={protecao.salvando}
+            onClick={() => protecao.solicitarSaida(() => sair.mutate())} className="underline">
             Sair
           </button>
         </nav>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <Outlet />
+        {protecao.aguardando ? <Alerta tipo="info">Aguarde o salvamento para sair.</Alerta> : null}
+        <Outlet context={protecao.contexto} />
       </main>
       <MinhaSenhaDialog aberto={senhaAberta} onFechar={() => setSenhaAberta(false)} />
+      <ConfirmarDescarte aberto={protecao.confirmar}
+        onContinuar={protecao.continuar} onDescartar={protecao.descartar} />
     </div>
   )
 }

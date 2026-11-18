@@ -4,7 +4,7 @@ import { useParams } from 'react-router'
 import { mensagemErro } from '@/api/client'
 import { chavesDashboard } from '@/api/dashboard'
 import { analisarProcesso, chavesProcessos, obterProcesso, salvarChecklist } from '@/api/processos'
-import type { Checklist } from '@/api/types'
+import type { Checklist, ProcessoDetalheOut } from '@/api/types'
 import { Alerta } from '@/components/Alerta'
 import { AvisoIA } from '@/components/AvisoIA'
 import { Botao } from '@/components/Botao'
@@ -22,7 +22,7 @@ import { RelatorioView } from './RelatorioView'
 export function ProcessoDetalhePage() {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
-  const [editando, setEditando] = useState(false)
+  const [editandoId, setEditandoId] = useState<string | null>(null)
 
   const consulta = useQuery({
     queryKey: chavesProcessos.detalhe(id),
@@ -48,11 +48,15 @@ export function ProcessoDetalhePage() {
   })
 
   const salvar = useMutation({
-    mutationFn: (checklist: Checklist) => salvarChecklist(id, checklist),
-    onSuccess: () => {
+    mutationFn: ({ processoId, checklist }: { processoId: string; checklist: Checklist }) =>
+      salvarChecklist(processoId, checklist),
+    onSuccess: (confirmado, { processoId }) => {
+      queryClient.setQueryData<ProcessoDetalheOut>(chavesProcessos.detalhe(processoId), (atual) =>
+        atual ? { ...atual, checklist: confirmado, numero_processo: confirmado.numero_processo, vara: confirmado.vara } : atual,
+      )
       void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
-      setEditando(false)
-      void queryClient.invalidateQueries({ queryKey: chavesProcessos.detalhe(id) })
+      setEditandoId((atual) => atual === processoId ? null : atual)
+      void queryClient.invalidateQueries({ queryKey: chavesProcessos.detalhe(processoId) })
       void queryClient.invalidateQueries({ queryKey: chavesProcessos.lista })
     },
   })
@@ -101,16 +105,17 @@ export function ProcessoDetalhePage() {
       {processo.checklist ? (
         <>
           <AvisoIA />
-          {editando ? (
+          {editandoId === id ? (
             <ChecklistForm
+              key={id}
               inicial={processo.checklist}
-              salvando={salvar.isPending}
-              erro={salvar.isError ? mensagemErro(salvar.error) : null}
-              onSalvar={(c) => salvar.mutate(c)}
-              onCancelar={() => setEditando(false)}
+              salvando={salvar.isPending && salvar.variables?.processoId === id}
+              erro={salvar.isError && salvar.variables?.processoId === id ? mensagemErro(salvar.error) : null}
+              onSalvar={(checklist) => salvar.mutate({ processoId: id, checklist })}
+              onCancelar={() => setEditandoId(null)}
             />
           ) : (
-            <ChecklistView checklist={processo.checklist} onEditar={() => setEditando(true)} />
+            <ChecklistView checklist={processo.checklist} onEditar={() => { salvar.reset(); setEditandoId(id) }} />
           )}
         </>
       ) : (
