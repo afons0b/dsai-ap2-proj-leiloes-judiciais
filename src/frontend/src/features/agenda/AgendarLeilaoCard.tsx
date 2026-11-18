@@ -77,8 +77,16 @@ export function AgendarLeilaoCard({ processo }: Props) {
     void queryClient.invalidateQueries({ queryKey: chavesAgenda.raiz })
   }
 
-  const agendar = useMutation({ mutationFn: agendarLeilao, onSuccess: invalidar })
-  const cancelar = useMutation({ mutationFn: cancelarLeilao, onSuccess: invalidar })
+  const agendar = useMutation({
+    mutationKey: chavesProcessos.operacao(processo.id, 'leilao'),
+    mutationFn: agendarLeilao,
+    onSuccess: invalidar,
+  })
+  const cancelar = useMutation({
+    mutationKey: chavesProcessos.operacao(processo.id, 'leilao'),
+    mutationFn: cancelarLeilao,
+    onSuccess: invalidar,
+  })
 
   if (processo.leilao) {
     const leilao = processo.leilao

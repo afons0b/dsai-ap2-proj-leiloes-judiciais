@@ -12,6 +12,9 @@ export const chavesProcessos = {
   lista: ['processos'] as const,
   pagina: (filtros: FiltrosProcessos) => ['processos', 'lista', filtros] as const,
   detalhe: (id: string) => ['processos', id] as const,
+  operacoes: (id: string) => ['processos', id, 'operacoes'] as const,
+  operacao: (id: string, etapa: 'analise' | 'leilao' | 'edital' | 'marketing') =>
+    ['processos', id, 'operacoes', etapa] as const,
 }
 
 export function listarProcessos(filtros: Partial<FiltrosProcessos> = {}): Promise<ProcessosPaginaOut> {

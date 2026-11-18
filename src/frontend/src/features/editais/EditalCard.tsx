@@ -69,6 +69,7 @@ export function EditalCard({ processo }: Props) {
   })
 
   const gerar = useMutation({
+    mutationKey: chavesProcessos.operacao(processo.id, 'edital'),
     mutationFn: () => gerarEdital(leilao?.id ?? ''),
     onSuccess: (novo) => {
       void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
@@ -79,6 +80,7 @@ export function EditalCard({ processo }: Props) {
   })
 
   const salvar = useMutation({
+    mutationKey: chavesProcessos.operacao(processo.id, 'edital'),
     mutationFn: (conteudo: string) => atualizarEdital(editalId ?? '', conteudo),
     onSuccess: (atualizado) => {
       queryClient.setQueryData(chavesEditais.detalhe(atualizado.id), atualizado)

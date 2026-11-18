@@ -3,6 +3,8 @@ import type { EnvioOut } from './types'
 
 export const chavesMarketing = {
   envios: ['marketing', 'envios'] as const,
+  progresso: (processoId: string, leilaoId: string) =>
+    ['marketing', 'envios', 'progresso', processoId, leilaoId] as const,
 }
 
 export const URL_PLANILHA = '/api/marketing/planilha'

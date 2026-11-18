@@ -16,6 +16,7 @@ import { EnviarMarketingCard } from '@/features/marketing/EnviarMarketingCard'
 import { ouTraco } from '@/lib/formatar'
 import { ChecklistForm } from './ChecklistForm'
 import { ChecklistView } from './ChecklistView'
+import { ProgressoProcessual } from './ProgressoProcessual'
 import { RelatorioView } from './RelatorioView'
 
 export function ProcessoDetalhePage() {
@@ -27,9 +28,12 @@ export function ProcessoDetalhePage() {
     queryKey: chavesProcessos.detalhe(id),
     queryFn: () => obterProcesso(id),
     enabled: id !== '',
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   const analisar = useMutation({
+    mutationKey: chavesProcessos.operacao(id, 'analise'),
     mutationFn: () => analisarProcesso(id),
     onSuccess: (detalhe) => {
       queryClient.setQueryData(chavesProcessos.detalhe(id), detalhe)
@@ -91,6 +95,8 @@ export function ProcessoDetalhePage() {
         </p>
         {erroAnalise ? <Alerta tipo="erro">{erroAnalise}</Alerta> : null}
       </header>
+
+      <ProgressoProcessual processo={processo} consultandoDetalhe={consulta.isFetching} />
 
       {processo.checklist ? (
         <>

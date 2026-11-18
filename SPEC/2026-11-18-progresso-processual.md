@@ -1,6 +1,6 @@
 # Indicador de progresso processual
 
-Data: 2026-11-18. Status: proposta para revisão; não implementada.
+Data: 2026-11-18. Status: aprovada e implementada no frontend.
 
 ## 1. Objetivo e escopo
 
@@ -136,9 +136,9 @@ concluídas, começando pelo Recebimento, contribui para o percentual:
 | CA10 | Carregamento/falha do histórico necessário não aparecem como 80%/histórico vazio ou erro de envio; respostas antigas não contaminam outro processo ou leilão. |
 | CA11 | Cálculo não altera dados, permissões, contratos HTTP/MCP ou regras de análise/agendamento/envio; admin e operador visualizam os mesmos estados para os mesmos dados. |
 
-Validação futura: testes unitários da função de cálculo e testes de UI com MSW,
-incluindo transições, erros, reanálise, cancelamento e atualização das consultas.
-Esta etapa produz somente a especificação.
+Validação implementada: testes unitários da função de cálculo e testes de UI com
+MSW, incluindo transições, erros, reanálise, cancelamento e consultas concorrentes.
+Backend, regras de negócio e contratos HTTP/MCP permanecem preservados.
 
 ## 7. Referências
 

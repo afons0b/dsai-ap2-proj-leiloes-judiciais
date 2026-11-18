@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { mensagemErro } from '@/api/client'
 import { chavesDashboard } from '@/api/dashboard'
 import { chavesMarketing, enviarParaMarketing } from '@/api/marketing'
+import { chavesProcessos } from '@/api/processos'
 import type { ProcessoDetalheOut } from '@/api/types'
 import { Alerta } from '@/components/Alerta'
 import { Botao } from '@/components/Botao'
@@ -16,10 +17,14 @@ export function EnviarMarketingCard({ processo }: Props) {
   const podeEnviar = leilao !== null && leilao.status === 'agendado' && leilao.edital_id !== null
 
   const enviar = useMutation({
+    mutationKey: chavesProcessos.operacao(processo.id, 'marketing'),
     mutationFn: () => enviarParaMarketing(leilao?.id ?? ''),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: chavesDashboard.resumo })
-      void queryClient.invalidateQueries({ queryKey: chavesMarketing.envios })
+    },
+    onSettled: async () => {
+      await queryClient.cancelQueries({ queryKey: chavesMarketing.envios })
+      await queryClient.invalidateQueries({ queryKey: chavesMarketing.envios })
     },
   })
 
