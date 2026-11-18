@@ -8,7 +8,7 @@ import { Botao } from '@/components/Botao'
 import { Card } from '@/components/Card'
 import { StatusBadge } from '@/components/StatusBadge'
 import { adicionarMeses, dataLocal, fimDoMes, inicioDoMes } from '@/lib/datas'
-import { formatarDataHora } from '@/lib/formatar'
+import { formatarData, formatarDataHora } from '@/lib/formatar'
 import { BloqueiosCard } from './BloqueiosCard'
 import { Calendario } from './Calendario'
 
@@ -16,6 +16,7 @@ const TITULO_MES = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'nume
 
 export function AgendaPage() {
   const [mes, setMes] = useState(() => inicioDoMes(new Date()))
+  const [dia, setDia] = useState<string | null>(null)
   const inicio = dataLocal(mes)
   const fim = dataLocal(fimDoMes(mes))
   const ano = mes.getFullYear()
@@ -30,6 +31,21 @@ export function AgendaPage() {
     queryFn: () => listarFeriados(ano),
   })
 
+  const leiloesVisiveis = (leiloes.data ?? []).filter(
+    (leilao) =>
+      dia === null ||
+      [leilao.primeiro_leilao_em, leilao.segundo_leilao_em].some(
+        (horario) => dataLocal(new Date(horario)) === dia,
+      ),
+  )
+  const feriadoDoDia = feriados.data?.find((item) => item.data === dia)
+  const bloqueioDoDia = bloqueios.data?.find((item) => item.data === dia)
+
+  function navegarMes(delta: number) {
+    setMes((atual) => adicionarMeses(atual, delta))
+    setDia(null)
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Agenda</h1>
@@ -37,10 +53,10 @@ export function AgendaPage() {
         titulo={TITULO_MES.format(mes)}
         acoes={
           <>
-            <Botao variante="secundario" onClick={() => setMes(adicionarMeses(mes, -1))}>
+            <Botao variante="secundario" onClick={() => navegarMes(-1)}>
               Mês anterior
             </Botao>
-            <Botao variante="secundario" onClick={() => setMes(adicionarMeses(mes, 1))}>
+            <Botao variante="secundario" onClick={() => navegarMes(1)}>
               Próximo mês
             </Botao>
           </>
@@ -49,6 +65,8 @@ export function AgendaPage() {
         <div className="flex flex-col gap-4">
           <Calendario
             mes={mes}
+            diaSelecionado={dia}
+            onSelecionarDia={(data) => setDia((anterior) => (anterior === data ? null : data))}
             leiloes={leiloes.data ?? []}
             bloqueios={bloqueios.data ?? []}
             feriados={feriados.data ?? []}
@@ -62,12 +80,24 @@ export function AgendaPage() {
           {leiloes.isPending ? <p className="text-sm text-slate-500">Carregando…</p> : null}
           {leiloes.isError ? <Alerta tipo="erro">{mensagemErro(leiloes.error)}</Alerta> : null}
           {feriados.isError ? <Alerta tipo="erro">{mensagemErro(feriados.error)}</Alerta> : null}
-          {leiloes.data && leiloes.data.length === 0 ? (
-            <p className="text-sm text-slate-500">Nenhum leilão neste mês.</p>
+          {dia ? (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <h3 className="font-semibold">Agenda de {formatarData(dia)}</h3>
+              <Botao variante="secundario" onClick={() => setDia(null)}>
+                Ver mês inteiro
+              </Botao>
+              {feriadoDoDia ? <span>Feriado: {feriadoDoDia.motivo}</span> : null}
+              {bloqueioDoDia ? <span>Bloqueio: {bloqueioDoDia.motivo}</span> : null}
+            </div>
           ) : null}
-          {leiloes.data && leiloes.data.length > 0 ? (
+          {leiloes.isSuccess && leiloesVisiveis.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              {dia ? 'Nenhum leilão neste dia.' : 'Nenhum leilão neste mês.'}
+            </p>
+          ) : null}
+          {leiloesVisiveis.length > 0 ? (
             <ul className="flex flex-col gap-2 text-sm">
-              {leiloes.data.map((l) => (
+              {leiloesVisiveis.map((l) => (
                 <li
                   key={l.id}
                   className="flex flex-wrap items-center gap-3 rounded border border-slate-100 p-2"

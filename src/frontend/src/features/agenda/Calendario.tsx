@@ -2,7 +2,14 @@ import type { BloqueioOut, FeriadoOut, LeilaoOut } from '@/api/types'
 import { dataLocal, diasDoMes } from '@/lib/datas'
 import { formatarData } from '@/lib/formatar'
 
-type Props = { mes: Date; leiloes: LeilaoOut[]; bloqueios: BloqueioOut[]; feriados: FeriadoOut[] }
+type Props = {
+  mes: Date
+  leiloes: LeilaoOut[]
+  bloqueios: BloqueioOut[]
+  feriados: FeriadoOut[]
+  diaSelecionado: string | null
+  onSelecionarDia: (dia: string) => void
+}
 
 const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
 
@@ -72,7 +79,9 @@ function montarSemanas(mes: Date): Semana[] {
   return semanas
 }
 
-function Dia({ dia, marcas }: { dia: Date; marcas: Marcas }) {
+type DiaProps = { dia: Date; marcas: Marcas; selecionado: boolean; onSelecionar: () => void }
+
+function Dia({ dia, marcas, selecionado, onSelecionar }: DiaProps) {
   const data = formatarData(dataLocal(dia))
   const resumo = marcas.rotulos.join('; ')
   const rotulo = resumo === '' ? data : `${data} — ${resumo}`
@@ -80,14 +89,29 @@ function Dia({ dia, marcas }: { dia: Date; marcas: Marcas }) {
     <td
       aria-label={rotulo}
       title={resumo}
-      className={`h-12 border border-slate-200 p-1 align-top ${marcas.classe}`}
+      className={`h-12 border border-slate-200 align-top ${marcas.classe}`}
     >
-      {dia.getDate()}
+      <button
+        type="button"
+        aria-label={`Selecionar ${rotulo}`}
+        aria-pressed={selecionado}
+        className="h-12 w-full p-1 text-left align-top hover:bg-blue-50 aria-pressed:bg-blue-200"
+        onClick={onSelecionar}
+      >
+        {dia.getDate()}
+      </button>
     </td>
   )
 }
 
-export function Calendario({ mes, leiloes, bloqueios, feriados }: Props) {
+export function Calendario({
+  mes,
+  leiloes,
+  bloqueios,
+  feriados,
+  diaSelecionado,
+  onSelecionarDia,
+}: Props) {
   const leiloesPorDia = contarLeiloesPorDia(leiloes)
   const semanas = montarSemanas(mes)
 
@@ -110,6 +134,8 @@ export function Calendario({ mes, leiloes, bloqueios, feriados }: Props) {
                 <Dia
                   key={celula.chave}
                   dia={celula.dia}
+                  selecionado={celula.chave === diaSelecionado}
+                  onSelecionar={() => onSelecionarDia(celula.chave)}
                   marcas={marcasDoDia(celula.dia, leiloesPorDia, bloqueios, feriados)}
                 />
               ) : (

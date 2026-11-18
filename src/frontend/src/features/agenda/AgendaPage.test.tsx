@@ -31,6 +31,20 @@ describe('AgendaPage', () => {
     )
   })
 
+  it('filtra os leilões pelo dia selecionado e volta ao mês inteiro', async () => {
+    logar('operador')
+    const { user } = renderComRouter('/agenda')
+    await irParaNovembro(user)
+    await screen.findByText('05/11/2026, 10:00')
+
+    await user.click(screen.getByRole('button', { name: /Selecionar 20\/11\/2026/ }))
+    expect(screen.getByText('Nenhum leilão neste dia.')).toBeInTheDocument()
+    expect(screen.queryByText('05/11/2026, 10:00')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Ver mês inteiro' }))
+    expect(screen.getByText('05/11/2026, 10:00')).toBeInTheDocument()
+  })
+
   it('calendário marca feriado automático', async () => {
     logar('operador')
     const { user } = renderComRouter('/agenda')
