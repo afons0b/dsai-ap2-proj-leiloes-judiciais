@@ -47,6 +47,9 @@ export function Layout() {
           <NavLink to="/marketing" className={classeLink}>
             Marketing
           </NavLink>
+          <NavLink to="/notificacoes" className={classeLink}>
+            Notificações
+          </NavLink>
           {ehAdmin ? (
             <NavLink to="/usuarios" className={classeLink}>
               Usuários

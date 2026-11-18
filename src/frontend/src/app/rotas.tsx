@@ -5,6 +5,7 @@ import { RotaAdmin } from '@/features/auth/RotaAdmin'
 import { RotaProtegida } from '@/features/auth/RotaProtegida'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { MarketingPage } from '@/features/marketing/MarketingPage'
+import { NotificacoesPage } from '@/features/notificacoes/NotificacoesPage'
 import { ProcessoDetalhePage } from '@/features/processos/ProcessoDetalhePage'
 import { ProcessosPage } from '@/features/processos/ProcessosPage'
 import { RelatorioImpressaoPage } from '@/features/processos/RelatorioImpressaoPage'
@@ -24,6 +25,7 @@ export const rotas: RouteObject[] = [
           { path: '/dashboard', element: <DashboardPage /> },
           { path: '/processos/:id', element: <ProcessoDetalhePage /> },
           { path: '/processos/:id/relatorio', element: <RelatorioImpressaoPage /> },
+          { path: '/notificacoes', element: <NotificacoesPage /> },
           { path: '/agenda', element: <AgendaPage /> },
           { path: '/marketing', element: <MarketingPage /> },
           {
