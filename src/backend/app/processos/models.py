@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -48,6 +48,15 @@ class ChecklistDB(IdCriadoEmMixin, Base):
     aprovado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     processo: Mapped[Processo] = relationship(back_populates="checklist")
+
+
+class EventoChecklistDB(IdCriadoEmMixin, Base):
+    __tablename__ = "historico_checklist"
+    __table_args__ = (Index("ix_historico_checklist_processo_data", "processo_id", "criado_em"),)
+
+    processo_id: Mapped[UUID] = mapped_column(ForeignKey("processos.id", ondelete="CASCADE"))
+    acao: Mapped[str] = mapped_column(String(20))
+    usuario: Mapped[str] = mapped_column(String(100))
 
 
 class RelatorioDB(IdCriadoEmMixin, Base):

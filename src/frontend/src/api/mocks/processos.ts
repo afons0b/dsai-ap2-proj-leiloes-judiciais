@@ -1,6 +1,6 @@
 import { delay, type HttpHandler, HttpResponse, http } from 'msw'
 import { lerFiltrosProcessos } from '@/api/filtrosProcessos'
-import type { Checklist } from '@/api/types'
+import type { Checklist, EventoChecklist } from '@/api/types'
 import {
   db,
   leilaoAtivo,
@@ -36,6 +36,15 @@ function substituirChecklist(processo: ProcessoMock, checklist: Checklist) {
   processo.checklist = checklist
   processo.revisaoChecklist = novoId('revisao')
   delete processo.aprovacaoChecklist
+}
+
+function registrarEvento(
+  processo: ProcessoMock,
+  acao: EventoChecklist['acao'],
+  usuario: string,
+) {
+  const evento = { id: novoId('evento'), acao, usuario, criado_em: new Date().toISOString() }
+  processo.historicoChecklist = [evento, ...(processo.historicoChecklist ?? [])]
 }
 
 export const processosHandlers: HttpHandler[] = [
@@ -117,9 +126,17 @@ export const processosHandlers: HttpHandler[] = [
     return HttpResponse.json(calcularPendenciasMock(processo.checklist))
   }),
 
-  http.post('/api/processos/:id/analisar', async ({ params }) => {
+  http.get('/api/processos/:id/checklist/historico', ({ params }) => {
     const bloqueado = exigirSessao()
     if (bloqueado) return bloqueado
+    const processo = buscarProcesso(params.id)
+    if (!processo) return erro(404, 'Processo não encontrado')
+    return HttpResponse.json((processo.historicoChecklist ?? []).slice(0, 20))
+  }),
+
+  http.post('/api/processos/:id/analisar', async ({ params }) => {
+    const usuario = usuarioLogado()
+    if (!usuario) return erro(401, 'Não autenticado')
     const processo = buscarProcesso(params.id)
     if (!processo) return erro(404, 'Processo não encontrado')
     processo.status = 'analisando'
@@ -130,6 +147,7 @@ export const processosHandlers: HttpHandler[] = [
       return erro(422, 'PDF sem camada de texto')
     }
     const checklist = structuredClone(CHECKLIST_EXEMPLO)
+    registrarEvento(processo, processo.checklist ? 'reanalise' : 'analise', usuario.username)
     substituirChecklist(processo, checklist)
     processo.relatorio = structuredClone(RELATORIO_EXEMPLO)
     processo.numero_processo = checklist.numero_processo
@@ -151,6 +169,7 @@ export const processosHandlers: HttpHandler[] = [
       return erro(409, 'O checklist mudou ou está indisponível para aprovação')
     }
     if (!atual.aprovado_em) {
+      registrarEvento(processo, 'aprovacao', usuario.username)
       processo.aprovacaoChecklist = {
         revisao: atual.revisao,
         aprovado_por: usuario.username,
@@ -161,12 +180,13 @@ export const processosHandlers: HttpHandler[] = [
   }),
 
   http.put('/api/processos/:id/checklist', async ({ params, request }) => {
-    const bloqueado = exigirSessao()
-    if (bloqueado) return bloqueado
+    const usuario = usuarioLogado()
+    if (!usuario) return erro(401, 'Não autenticado')
     const processo = buscarProcesso(params.id)
     if (!processo) return erro(404, 'Processo não encontrado')
     const checklist = (await request.json()) as Checklist
     substituirChecklist(processo, checklist)
+    registrarEvento(processo, 'edicao', usuario.username)
     processo.numero_processo = checklist.numero_processo
     processo.vara = checklist.vara
     return HttpResponse.json(checklist)

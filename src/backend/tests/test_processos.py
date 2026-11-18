@@ -402,3 +402,30 @@ async def test_aprovacao_do_checklist_expira_apos_edicao(
     atual = (await cliente_operador.get(url)).json()["aprovacao_checklist"]
     assert atual["revisao"] != revisao
     assert atual["aprovado_em"] is None
+
+
+async def test_historico_registra_acoes_confirmadas_sem_repetir_aprovacao(
+    cliente_operador: AsyncClient,
+) -> None:
+    processo_id = (await upload(cliente_operador)).json()["id"]
+    url = f"/api/processos/{processo_id}"
+    historico = f"{url}/checklist/historico"
+    assert (await cliente_operador.get(historico)).json() == []
+
+    detalhe = (await cliente_operador.post(f"{url}/analisar")).json()
+    checklist = {**detalhe["checklist"], "vara": "Vara revisada"}
+    assert (await cliente_operador.put(f"{url}/checklist", json=checklist)).status_code == 200
+
+    detalhe = (await cliente_operador.get(url)).json()
+    revisao = detalhe["aprovacao_checklist"]["revisao"]
+    for _ in range(2):
+        resposta = await cliente_operador.post(
+            f"{url}/checklist/aprovacao", json={"revisao": revisao}
+        )
+        assert resposta.status_code == 200
+
+    resposta = await cliente_operador.get(historico)
+    assert resposta.status_code == 200
+    eventos = resposta.json()
+    assert [evento["acao"] for evento in eventos] == ["aprovacao", "edicao", "analise"]
+    assert all(evento["usuario"] == "operador" and evento["criado_em"] for evento in eventos)

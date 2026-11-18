@@ -4,6 +4,7 @@ import type {
   EditalOut,
   EnvioOut,
   EnvioStatus,
+  EventoChecklist,
   LeilaoOut,
   LeilaoStatus,
   ProcessoDetalheOut,
@@ -19,6 +20,7 @@ export type ProcessoMock = ProcessoOut & {
   relatorio: Relatorio | null
   revisaoChecklist?: string
   aprovacaoChecklist?: AprovacaoChecklist
+  historicoChecklist?: EventoChecklist[]
 }
 export type LeilaoMock = {
   id: string

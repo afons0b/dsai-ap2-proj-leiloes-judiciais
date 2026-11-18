@@ -3,6 +3,7 @@ import { parametrosProcessos } from './filtrosProcessos'
 import type {
   AprovacaoChecklist,
   Checklist,
+  EventoChecklist,
   FiltrosProcessos,
   Pendencia,
   ProcessoDetalheOut,
@@ -15,6 +16,7 @@ export const chavesProcessos = {
   pagina: (filtros: FiltrosProcessos) => ['processos', 'lista', filtros] as const,
   detalhe: (id: string) => ['processos', id] as const,
   pendencias: (id: string) => ['processos', id, 'pendencias'] as const,
+  historicoChecklist: (id: string) => ['processos', id, 'historico-checklist'] as const,
   operacoes: (id: string) => ['processos', id, 'operacoes'] as const,
   operacao: (id: string, etapa: 'analise' | 'leilao' | 'edital' | 'marketing') =>
     ['processos', id, 'operacoes', etapa] as const,
@@ -31,6 +33,10 @@ export function obterProcesso(id: string): Promise<ProcessoDetalheOut> {
 
 export function listarPendencias(id: string): Promise<Pendencia[]> {
   return api.get<Pendencia[]>(`/processos/${id}/pendencias`)
+}
+
+export function listarHistoricoChecklist(id: string): Promise<EventoChecklist[]> {
+  return api.get<EventoChecklist[]>(`/processos/${id}/checklist/historico`)
 }
 
 export function enviarProcesso(arquivo: File): Promise<ProcessoOut> {

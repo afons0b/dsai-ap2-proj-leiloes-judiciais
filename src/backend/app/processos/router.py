@@ -14,6 +14,7 @@ from app.processos.schemas import (
     AprovacaoChecklistOut,
     AprovarChecklistIn,
     Checklist,
+    EventoChecklistOut,
     FiltrosProcessos,
     Pendencia,
     ProcessoDetalheHttpOut,
@@ -82,11 +83,22 @@ async def listar_pendencias(processo_id: UUID, session: SessionDep) -> list[Pend
     return await service.listar_pendencias(session, processo_id)
 
 
+@router.get("/{processo_id}/checklist/historico", response_model=list[EventoChecklistOut])
+async def historico_checklist(processo_id: UUID, session: SessionDep) -> list[EventoChecklistOut]:
+    return await service.historico_checklist(session, processo_id)
+
+
 @router.post("/{processo_id}/analisar", response_model=ProcessoDetalheHttpOut)
 async def analisar(
-    processo_id: UUID, session: SessionDep, settings: SettingsDep, llm: LLMDep
+    processo_id: UUID,
+    session: SessionDep,
+    settings: SettingsDep,
+    llm: LLMDep,
+    usuario: UsuarioAtual,
 ) -> ProcessoDetalheHttpOut:
-    processo = await service.analisar(session, settings, llm, processo_id)
+    processo = await service.analisar(
+        session, settings, llm, processo_id, usuario=usuario.username
+    )
     return await service.detalhe_http(session, processo.id)
 
 
@@ -99,9 +111,9 @@ async def aprovar_checklist(
 
 @router.put("/{processo_id}/checklist", response_model=Checklist)
 async def editar_checklist(
-    processo_id: UUID, checklist: Checklist, session: SessionDep
+    processo_id: UUID, checklist: Checklist, session: SessionDep, usuario: UsuarioAtual
 ) -> Checklist:
-    return await service.editar_checklist(session, processo_id, checklist)
+    return await service.editar_checklist(session, processo_id, checklist, usuario.username)
 
 
 @router.delete("/{processo_id}", status_code=204, dependencies=[Depends(exige_admin)])

@@ -135,6 +135,18 @@ class Relatorio(BaseModel):
     etapas: list[Etapa] = Field(default_factory=list)
 
 
+AcaoChecklist = Literal["analise", "reanalise", "edicao", "aprovacao"]
+
+
+class EventoChecklistOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    acao: AcaoChecklist
+    usuario: str
+    criado_em: datetime
+
+
 class AprovarChecklistIn(BaseModel):
     revisao: UUID
 

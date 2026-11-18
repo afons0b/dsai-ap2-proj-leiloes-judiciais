@@ -16,12 +16,14 @@ from app.config import Settings
 from app.errors import ErroDominio
 from app.llm.base import LLMClient
 from app.pdf.extract import extract_text
-from app.processos.models import ChecklistDB, Processo, RelatorioDB
+from app.processos.models import ChecklistDB, EventoChecklistDB, Processo, RelatorioDB
 from app.processos.prompts import SYSTEM_CHECKLIST, SYSTEM_RELATORIO, user_prompt
 from app.processos.schemas import (
+    AcaoChecklist,
     AprovacaoChecklistOut,
     BemPenhorado,
     Checklist,
+    EventoChecklistOut,
     FiltrosProcessos,
     Pendencia,
     ProcessoDetalheHttpOut,
@@ -258,6 +260,30 @@ async def listar_pendencias(session: AsyncSession, processo_id: UUID) -> list[Pe
     return pendencias(checklist_de(processo))
 
 
+def _registrar_evento(
+    session: AsyncSession, processo_id: UUID, acao: AcaoChecklist, usuario: str
+) -> None:
+    session.add(
+        EventoChecklistDB(
+            processo_id=processo_id, acao=acao, usuario=usuario, criado_em=datetime.now(UTC)
+        )
+    )
+
+
+async def historico_checklist(
+    session: AsyncSession, processo_id: UUID
+) -> list[EventoChecklistOut]:
+    if await session.scalar(select(Processo.id).where(Processo.id == processo_id)) is None:
+        raise ErroDominio(404, "Processo não encontrado")
+    eventos = await session.scalars(
+        select(EventoChecklistDB)
+        .where(EventoChecklistDB.processo_id == processo_id)
+        .order_by(EventoChecklistDB.criado_em.desc(), EventoChecklistDB.id.desc())
+        .limit(20)
+    )
+    return [EventoChecklistOut.model_validate(evento) for evento in eventos]
+
+
 def aprovacao_de(processo: Processo) -> AprovacaoChecklistOut:
     checklist = processo.checklist
     if checklist is None or processo.status == "analisando":
@@ -295,6 +321,7 @@ async def aprovar_checklist(
     )
     if registro is None:
         raise ErroDominio(409, "O checklist mudou. Revise novamente antes de aprovar")
+    _registrar_evento(session, processo_id, "aprovacao", username)
     await session.commit()
     return AprovacaoChecklistOut(revisao=revisao, aprovado_por=username, aprovado_em=agora)
 
@@ -329,7 +356,12 @@ async def _gravar_relatorio(
 
 
 async def analisar(
-    session: AsyncSession, settings: Settings, llm: LLMClient, processo_id: UUID
+    session: AsyncSession,
+    settings: Settings,
+    llm: LLMClient,
+    processo_id: UUID,
+    *,
+    usuario: str | None = None,
 ) -> Processo:
     processo = await obter(session, processo_id)
     processo.status = "analisando"
@@ -360,7 +392,10 @@ async def analisar(
         await _marcar_erro(session, processo, "Falha ao analisar processo")
         raise ErroDominio(502, "Falha ao analisar processo") from None
 
+    acao: AcaoChecklist = "analise" if processo.checklist is None else "reanalise"
     await _gravar_checklist(session, processo, checklist)
+    if usuario is not None:
+        _registrar_evento(session, processo_id, acao, usuario)
     await _gravar_relatorio(session, processo, relatorio)
     processo.status = "analisado"
     processo.analisado_em = datetime.now(UTC)
@@ -370,10 +405,11 @@ async def analisar(
 
 
 async def editar_checklist(
-    session: AsyncSession, processo_id: UUID, checklist: Checklist
+    session: AsyncSession, processo_id: UUID, checklist: Checklist, usuario: str
 ) -> Checklist:
     processo = await obter(session, processo_id)
     await _gravar_checklist(session, processo, checklist)
+    _registrar_evento(session, processo_id, "edicao", usuario)
     await session.commit()
     await session.refresh(processo)
     return checklist
