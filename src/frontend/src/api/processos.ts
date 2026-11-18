@@ -3,6 +3,7 @@ import { parametrosProcessos } from './filtrosProcessos'
 import type {
   Checklist,
   FiltrosProcessos,
+  Pendencia,
   ProcessoDetalheOut,
   ProcessoOut,
   ProcessosPaginaOut,
@@ -12,6 +13,7 @@ export const chavesProcessos = {
   lista: ['processos'] as const,
   pagina: (filtros: FiltrosProcessos) => ['processos', 'lista', filtros] as const,
   detalhe: (id: string) => ['processos', id] as const,
+  pendencias: (id: string) => ['processos', id, 'pendencias'] as const,
   operacoes: (id: string) => ['processos', id, 'operacoes'] as const,
   operacao: (id: string, etapa: 'analise' | 'leilao' | 'edital' | 'marketing') =>
     ['processos', id, 'operacoes', etapa] as const,
@@ -24,6 +26,10 @@ export function listarProcessos(filtros: Partial<FiltrosProcessos> = {}): Promis
 
 export function obterProcesso(id: string): Promise<ProcessoDetalheOut> {
   return api.get<ProcessoDetalheOut>(`/processos/${id}`)
+}
+
+export function listarPendencias(id: string): Promise<Pendencia[]> {
+  return api.get<Pendencia[]>(`/processos/${id}/pendencias`)
 }
 
 export function enviarProcesso(arquivo: File): Promise<ProcessoOut> {

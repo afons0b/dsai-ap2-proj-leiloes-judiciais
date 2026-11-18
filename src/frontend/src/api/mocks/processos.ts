@@ -4,6 +4,7 @@ import type { Checklist } from '@/api/types'
 import { db, leilaoAtivo, novoId, type ProcessoMock, toDetalhe, toProcessoOut } from './db'
 import { CHECKLIST_EXEMPLO, RELATORIO_EXEMPLO } from './fixtures'
 import { erro, exigirAdmin, exigirSessao } from './http'
+import { calcularPendenciasMock } from './regrasPendencias'
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 const ATRASO_ANALISE_MS = import.meta.env.MODE === 'test' ? 0 : 800
@@ -92,6 +93,14 @@ export const processosHandlers: HttpHandler[] = [
     const processo = buscarProcesso(params.id)
     if (!processo) return erro(404, 'Processo não encontrado')
     return HttpResponse.json(toDetalhe(processo))
+  }),
+
+  http.get('/api/processos/:id/pendencias', ({ params }) => {
+    const bloqueado = exigirSessao()
+    if (bloqueado) return bloqueado
+    const processo = buscarProcesso(params.id)
+    if (!processo) return erro(404, 'Processo não encontrado')
+    return HttpResponse.json(calcularPendenciasMock(processo.checklist))
   }),
 
   http.post('/api/processos/:id/analisar', async ({ params }) => {

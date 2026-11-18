@@ -348,3 +348,34 @@ def test_pendencias_observacoes_viram_atencao() -> None:
     assert service.pendencias(checklist) == [
         Pendencia(gravidade="atencao", campo="observacoes_leilao[0]", mensagem="Reserva de meação")
     ]
+
+
+async def test_pendencias_exigem_sessao(cliente: AsyncClient) -> None:
+    resposta = await cliente.get(f"/api/processos/{uuid4()}/pendencias")
+    assert resposta.status_code == 401
+
+
+async def test_pendencias_de_processo_inexistente(cliente_operador: AsyncClient) -> None:
+    resposta = await cliente_operador.get(f"/api/processos/{uuid4()}/pendencias")
+    assert resposta.status_code == 404
+
+
+async def test_pendencias_refletem_o_checklist_salvo(cliente_operador: AsyncClient) -> None:
+    processo_id = (await upload(cliente_operador)).json()["id"]
+    url = f"/api/processos/{processo_id}"
+    resposta = await cliente_operador.get(f"{url}/pendencias")
+    assert resposta.status_code == 200
+    assert [item["campo"] for item in resposta.json()] == ["checklist"]
+
+    resposta = await cliente_operador.post(f"{url}/analisar")
+    assert resposta.status_code == 200
+    checklist = {**resposta.json()["checklist"], "executados": [], "bens": []}
+    resposta = await cliente_operador.put(f"{url}/checklist", json=checklist)
+    assert resposta.status_code == 200
+
+    resposta = await cliente_operador.get(f"{url}/pendencias")
+    assert resposta.status_code == 200
+    impedimentos = [
+        item["campo"] for item in resposta.json() if item["gravidade"] == "bloqueia"
+    ]
+    assert impedimentos == ["executados", "bens"]

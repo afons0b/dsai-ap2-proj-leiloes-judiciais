@@ -131,6 +131,13 @@ export type Checklist = {
   observacoes_leilao: string[]
 }
 
+export type Pendencia = {
+  gravidade: 'bloqueia' | 'atencao'
+  campo: string
+  mensagem: string
+  ref: string | null
+}
+
 export type Etapa = { data: string | null; descricao: string; ref: string | null }
 export type Relatorio = { resumo: string; etapas: Etapa[] }
 

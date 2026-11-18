@@ -13,6 +13,7 @@ from app.processos import service
 from app.processos.schemas import (
     Checklist,
     FiltrosProcessos,
+    Pendencia,
     ProcessoDetalheOut,
     ProcessoOut,
     ProcessosPaginaOut,
@@ -72,6 +73,11 @@ async def listar(
 @router.get("/{processo_id}", response_model=ProcessoDetalheOut)
 async def detalhe(processo_id: UUID, session: SessionDep) -> ProcessoDetalheOut:
     return await service.detalhe(session, processo_id)
+
+
+@router.get("/{processo_id}/pendencias", response_model=list[Pendencia])
+async def listar_pendencias(processo_id: UUID, session: SessionDep) -> list[Pendencia]:
+    return await service.listar_pendencias(session, processo_id)
 
 
 @router.post("/{processo_id}/analisar", response_model=ProcessoDetalheOut)
