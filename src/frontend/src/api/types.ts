@@ -75,9 +75,15 @@ export type DashboardOut = {
   proximos_leiloes: ProximoLeilaoOut[]
 }
 
-export type Advogado = { nome: string; oab: string | null; ref: string | null }
+export type Advogado = { nome: string; cpf?: string | null; oab: string | null; ref: string | null }
 
-export type Parte = { nome: string; cpf_cnpj: string | null; advogados: Advogado[] }
+export type Parte = {
+  nome: string
+  cpf_cnpj: string | null
+  representacao?: string | null
+  procuracao_ref?: string | null
+  advogados: Advogado[]
+}
 
 export type Executado = Parte & {
   citado: boolean | null
@@ -86,6 +92,8 @@ export type Executado = Parte & {
 }
 
 export type Execucao = {
+  titulo_executivo?: string | null
+  valor_divida_ref?: string | null
   cda: string | null
   natureza_divida: string | null
   classe: string | null
@@ -93,7 +101,38 @@ export type Execucao = {
   data_divida: string | null
 }
 
+export type CategoriaBem = 'imovel' | 'material' | 'veiculo'
+
+export type DadosImovel = {
+  intimacao_conjuge?: string | null
+  data_averbacao_penhora?: string | null
+}
+
+export type DadosVeiculo = {
+  marca_modelo?: string | null
+  placa?: string | null
+  cor?: string | null
+  ano?: string | null
+  modelo?: string | null
+  chassi?: string | null
+  renavam?: string | null
+  proprietario_detran?: string | null
+  intimacao_detran?: string | null
+  credor_fiduciario?: string | null
+  multas_debitos?: string | null
+}
+
 export type BemPenhorado = {
+  categoria?: CategoriaBem | null
+  imovel?: DadosImovel | null
+  veiculo?: DadosVeiculo | null
+  intimacao_forma?: string | null
+  avaliacao_ref?: string | null
+  oficial_reavaliacao?: string | null
+  reavaliacao_ref?: string | null
+  intimacao_reavaliacao?: string | null
+  data_intimacao_reavaliacao?: string | null
+  intimacao_reavaliacao_ref?: string | null
   descricao: string
   matricula: string | null
   localizacao: string | null

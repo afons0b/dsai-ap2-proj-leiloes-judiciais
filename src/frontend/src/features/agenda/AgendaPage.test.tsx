@@ -25,7 +25,7 @@ describe('AgendaPage', () => {
     expect(await screen.findByRole('heading', { name: 'novembro de 2026' })).toBeInTheDocument()
     expect(await screen.findByText('05/11/2026, 10:00')).toBeInTheDocument()
     expect(screen.getByText('12/11/2026, 10:00')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '1003966-15.2022.4.01.4301' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'PROCESSO-SINTETICO-001' })).toHaveAttribute(
       'href',
       '/processos/p-1',
     )

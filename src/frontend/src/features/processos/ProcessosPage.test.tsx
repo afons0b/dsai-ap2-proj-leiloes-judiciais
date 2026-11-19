@@ -14,8 +14,8 @@ describe('ProcessosPage', () => {
   it('lista os processos com status e número; número nulo vira traço', async () => {
     logar('operador')
     renderComRouter('/')
-    expect(await screen.findByText('processo-1003966.pdf')).toBeInTheDocument()
-    expect(screen.getByText('1003966-15.2022.4.01.4301')).toBeInTheDocument()
+    expect(await screen.findByText('processo-sintetico.pdf')).toBeInTheDocument()
+    expect(screen.getByText('PROCESSO-SINTETICO-001')).toBeInTheDocument()
     expect(screen.getByText('analisado')).toBeInTheDocument()
     const linhaRecebido = linhaDe('execucao-fiscal-2024.pdf')
     expect(within(linhaRecebido).getAllByText('—')).toHaveLength(2)
@@ -25,7 +25,7 @@ describe('ProcessosPage', () => {
   it('upload de PDF adiciona linha na lista', async () => {
     logar('operador')
     const { user } = renderComRouter('/')
-    await screen.findByText('processo-1003966.pdf')
+    await screen.findByText('processo-sintetico.pdf')
     const input = screen.getByLabelText('Arquivo PDF do processo')
     await user.upload(
       input,
@@ -38,7 +38,7 @@ describe('ProcessosPage', () => {
     logar('operador')
     renderComRouter('/')
     const user = userEvent.setup({ applyAccept: false })
-    await screen.findByText('processo-1003966.pdf')
+    await screen.findByText('processo-sintetico.pdf')
     const input = screen.getByLabelText('Arquivo PDF do processo')
     await user.upload(input, new File(['oi'], 'nota.txt', { type: 'text/plain' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Arquivo deve ser PDF')
@@ -54,7 +54,7 @@ describe('ProcessosPage', () => {
   it('nome do arquivo é link pro detalhe', async () => {
     logar('operador')
     renderComRouter('/')
-    const link = await screen.findByRole('link', { name: 'processo-1003966.pdf' })
+    const link = await screen.findByRole('link', { name: 'processo-sintetico.pdf' })
     expect(link).toHaveAttribute('href', '/processos/p-1')
   })
 
@@ -77,22 +77,22 @@ describe('ProcessosPage', () => {
   it('admin recebe 409 ao apagar processo com leilão agendado', async () => {
     logar('admin')
     const { user } = renderComRouter('/')
-    await screen.findByText('processo-1003966.pdf')
+    await screen.findByText('processo-sintetico.pdf')
     await user.click(
-      within(linhaDe('processo-1003966.pdf')).getByRole('button', { name: 'Apagar' }),
+      within(linhaDe('processo-sintetico.pdf')).getByRole('button', { name: 'Apagar' }),
     )
     const dialogo = await screen.findByRole('dialog')
     await user.click(within(dialogo).getByRole('button', { name: 'Apagar' }))
     expect(await within(dialogo).findByRole('alert')).toHaveTextContent(
       'Processo tem leilão agendado',
     )
-    expect(screen.getByRole('link', { name: 'processo-1003966.pdf' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'processo-sintetico.pdf' })).toBeInTheDocument()
   })
 
   it('operador não vê o botão Apagar', async () => {
     logar('operador')
     renderComRouter('/')
-    await screen.findByText('processo-1003966.pdf')
+    await screen.findByText('processo-sintetico.pdf')
     expect(screen.queryByRole('button', { name: 'Apagar' })).not.toBeInTheDocument()
   })
 })

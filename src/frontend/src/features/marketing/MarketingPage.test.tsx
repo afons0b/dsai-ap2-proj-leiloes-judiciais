@@ -16,7 +16,7 @@ describe('MarketingPage', () => {
       erro: null,
     })
     renderComRouter('/marketing')
-    expect(await screen.findByText('1003966-15.2022.4.01.4301')).toBeInTheDocument()
+    expect(await screen.findByText('PROCESSO-SINTETICO-001')).toBeInTheDocument()
     expect(screen.getByText('marketing@exemplo.com.br')).toBeInTheDocument()
     expect(screen.getByText('23/09/2026, 15:30')).toBeInTheDocument()
     expect(screen.getByText('enviado')).toBeInTheDocument()

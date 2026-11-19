@@ -87,7 +87,7 @@ function estadoInicial(): Db {
     processos: [
       {
         id: 'p-1',
-        nome_arquivo: 'processo-1003966.pdf',
+        nome_arquivo: 'processo-sintetico.pdf',
         status: 'analisado',
         numero_processo: CHECKLIST_EXEMPLO.numero_processo,
         vara: CHECKLIST_EXEMPLO.vara,

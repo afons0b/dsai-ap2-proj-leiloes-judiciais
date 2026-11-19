@@ -23,6 +23,7 @@ Dinheiro = Annotated[
 ]
 ProcessoStatus = Literal["recebido", "analisando", "analisado", "erro"]
 TipoJustica = Literal["estadual", "federal"]
+CategoriaBem = Literal["imovel", "material", "veiculo"]
 Gravidade = Literal["bloqueia", "atencao"]
 Ref = Annotated[
     str | None,
@@ -64,6 +65,7 @@ class FiltrosProcessos(BaseModel):
 
 class Advogado(BaseModel):
     nome: str
+    cpf: str | None = None
     oab: str | None = None
     ref: Ref
 
@@ -71,6 +73,8 @@ class Advogado(BaseModel):
 class Parte(BaseModel):
     nome: str
     cpf_cnpj: str | None = None
+    representacao: str | None = None
+    procuracao_ref: Ref
     advogados: list[Advogado] = Field(default_factory=list)
 
 
@@ -82,14 +86,38 @@ class Executado(Parte):
 
 class Execucao(BaseModel):
     cda: str | None = None
+    titulo_executivo: str | None = None
+    valor_divida_ref: Ref
     natureza_divida: str | None = None
     classe: str | None = None
     valor_divida: Dinheiro | None = None
     data_divida: date | None = None
 
 
+class DadosImovel(BaseModel):
+    intimacao_conjuge: str | None = None
+    data_averbacao_penhora: date | None = None
+
+
+class DadosVeiculo(BaseModel):
+    marca_modelo: str | None = None
+    placa: str | None = None
+    cor: str | None = None
+    ano: str | None = None
+    modelo: str | None = None
+    chassi: str | None = None
+    renavam: str | None = None
+    proprietario_detran: str | None = None
+    intimacao_detran: str | None = None
+    credor_fiduciario: str | None = None
+    multas_debitos: str | None = None
+
+
 class BemPenhorado(BaseModel):
     descricao: str
+    categoria: CategoriaBem | None = None
+    imovel: DadosImovel | None = None
+    veiculo: DadosVeiculo | None = None
     matricula: str | None = None
     localizacao: str | None = None
     data_penhora: date | None = None
@@ -98,12 +126,19 @@ class BemPenhorado(BaseModel):
     executado_intimado: bool | None = None
     data_intimacao: date | None = None
     intimacao_ref: Ref
+    intimacao_forma: str | None = None
     propriedade: str | None = None
     valor_avaliacao: Dinheiro | None = None
     data_avaliacao: date | None = None
     oficial_avaliacao: str | None = None
+    avaliacao_ref: Ref
     valor_reavaliacao: Dinheiro | None = None
     data_reavaliacao: date | None = None
+    oficial_reavaliacao: str | None = None
+    reavaliacao_ref: Ref
+    intimacao_reavaliacao: str | None = None
+    data_intimacao_reavaliacao: date | None = None
+    intimacao_reavaliacao_ref: Ref
     certidao_matricula_ref: Ref
     averbacao_penhora: str | None = None
     hipoteca: str | None = None

@@ -3,6 +3,7 @@ import type { Advogado, BemPenhorado, Checklist, Executado, Parte } from '@/api/
 import { Botao } from '@/components/Botao'
 import { Card } from '@/components/Card'
 import { formatarData, formatarDinheiro, ouTraco } from '@/lib/formatar'
+import { CAMPOS_IMOVEL, CAMPOS_VEICULO, CATEGORIAS_BEM, temDadosImovel, temDadosVeiculo } from './dadosBem'
 
 function simNao(valor: boolean | null): string {
   if (valor === null) return '—'
@@ -34,6 +35,7 @@ function Advogados({ advogados }: { advogados: Advogado[] }) {
       {advogados.map((a) => (
         <li key={`${a.nome}-${a.oab ?? ''}`}>
           {a.nome}
+          {a.cpf ? ` — CPF: ${a.cpf}` : ''}
           {a.oab ? ` — ${a.oab}` : ''}
           {a.ref ? ` (${a.ref})` : ''}
         </li>
@@ -47,6 +49,8 @@ function ParteView({ parte }: { parte: Parte }) {
     <>
       <Linha rotulo="Nome" valor={parte.nome} />
       <Linha rotulo="CPF/CNPJ" valor={ouTraco(parte.cpf_cnpj)} />
+      <Linha rotulo="Representação" valor={ouTraco(parte.representacao ?? null)} />
+      <Linha rotulo="Ref. procuração" valor={ouTraco(parte.procuracao_ref ?? null)} />
       <Linha rotulo="Advogados" valor={<Advogados advogados={parte.advogados} />} />
     </>
   )
@@ -67,8 +71,8 @@ function BemView({ bem, indice }: { bem: BemPenhorado; indice: number }) {
   return (
     <div className="rounded border border-slate-100 p-2">
       <h4 className="mb-1 text-sm font-semibold">Bem {indice + 1}</h4>
+      <Linha rotulo="Categoria" valor={bem.categoria ? CATEGORIAS_BEM[bem.categoria] : 'Não informado'} />
       <Linha rotulo="Descrição" valor={bem.descricao} />
-      <Linha rotulo="Matrícula" valor={ouTraco(bem.matricula)} />
       <Linha rotulo="Localização" valor={ouTraco(bem.localizacao)} />
       <Linha rotulo="Data da penhora" valor={formatarData(bem.data_penhora)} />
       <Linha rotulo="Ref. penhora" valor={ouTraco(bem.penhora_ref)} />
@@ -76,17 +80,38 @@ function BemView({ bem, indice }: { bem: BemPenhorado; indice: number }) {
       <Linha rotulo="Executado intimado" valor={simNao(bem.executado_intimado)} />
       <Linha rotulo="Data da intimação" valor={formatarData(bem.data_intimacao)} />
       <Linha rotulo="Ref. intimação" valor={ouTraco(bem.intimacao_ref)} />
+      <Linha rotulo="Forma da intimação" valor={ouTraco(bem.intimacao_forma ?? null)} />
       <Linha rotulo="Propriedade" valor={ouTraco(bem.propriedade)} />
       <Linha rotulo="Avaliação" valor={formatarDinheiro(bem.valor_avaliacao)} />
       <Linha rotulo="Data da avaliação" valor={formatarData(bem.data_avaliacao)} />
       <Linha rotulo="Oficial avaliador" valor={ouTraco(bem.oficial_avaliacao)} />
+      <Linha rotulo="Ref. avaliação" valor={ouTraco(bem.avaliacao_ref ?? null)} />
       <Linha rotulo="Reavaliação" valor={formatarDinheiro(bem.valor_reavaliacao)} />
       <Linha rotulo="Data da reavaliação" valor={formatarData(bem.data_reavaliacao)} />
-      <Linha rotulo="Certidão de matrícula" valor={ouTraco(bem.certidao_matricula_ref)} />
-      <Linha rotulo="Averbação da penhora" valor={ouTraco(bem.averbacao_penhora)} />
-      <Linha rotulo="Hipoteca" valor={ouTraco(bem.hipoteca)} />
-      <Linha rotulo="Enfiteuse / aforamento" valor={ouTraco(bem.enfiteuse)} />
+      <Linha rotulo="Oficial da reavaliação" valor={ouTraco(bem.oficial_reavaliacao ?? null)} />
+      <Linha rotulo="Ref. reavaliação" valor={ouTraco(bem.reavaliacao_ref ?? null)} />
+      <Linha rotulo="Intimação da reavaliação" valor={ouTraco(bem.intimacao_reavaliacao ?? null)} />
+      <Linha rotulo="Data da intimação da reavaliação" valor={formatarData(bem.data_intimacao_reavaliacao ?? null)} />
+      <Linha rotulo="Ref. intimação da reavaliação" valor={ouTraco(bem.intimacao_reavaliacao_ref ?? null)} />
       <Linha rotulo="Outras penhoras" valor={ouTraco(bem.outras_penhoras)} />
+      {bem.categoria == null || bem.categoria === 'imovel' || temDadosImovel(bem) ? (
+        <>
+          <h5 className="mt-2 font-medium">{bem.categoria && bem.categoria !== 'imovel' ? 'Dados preservados de outra categoria — imóvel' : 'Dados do imóvel'}</h5>
+          <Linha rotulo="Matrícula" valor={ouTraco(bem.matricula)} />
+          <Linha rotulo="Certidão de matrícula" valor={ouTraco(bem.certidao_matricula_ref)} />
+          <Linha rotulo="Averbação da penhora" valor={ouTraco(bem.averbacao_penhora)} />
+          <Linha rotulo="Hipoteca" valor={ouTraco(bem.hipoteca)} />
+          <Linha rotulo="Enfiteuse / aforamento" valor={ouTraco(bem.enfiteuse)} />
+          {CAMPOS_IMOVEL.map(([campo, label, tipo]) => <Linha key={campo} rotulo={label}
+            valor={tipo === 'date' ? formatarData(bem.imovel?.[campo] ?? null) : ouTraco(bem.imovel?.[campo] ?? null)} />)}
+        </>
+      ) : null}
+      {bem.categoria === 'veiculo' || temDadosVeiculo(bem) ? (
+        <>
+          <h5 className="mt-2 font-medium">{bem.categoria !== 'veiculo' ? 'Dados preservados de outra categoria — veículo' : 'Dados do veículo'}</h5>
+          {CAMPOS_VEICULO.map(([campo, label]) => <Linha key={campo} rotulo={label} valor={ouTraco(bem.veiculo?.[campo] ?? null)} />)}
+        </>
+      ) : null}
     </div>
   )
 }
@@ -121,6 +146,8 @@ export function ChecklistView({ checklist, onEditar }: Props) {
         </Secao>
         <Secao titulo="Execução">
           <Linha rotulo="CDA" valor={ouTraco(checklist.execucao.cda)} />
+          <Linha rotulo="Título executivo" valor={ouTraco(checklist.execucao.titulo_executivo ?? null)} />
+          <Linha rotulo="Ref. valor da dívida" valor={ouTraco(checklist.execucao.valor_divida_ref ?? null)} />
           <Linha rotulo="Natureza da dívida" valor={ouTraco(checklist.execucao.natureza_divida)} />
           <Linha rotulo="Classe" valor={ouTraco(checklist.execucao.classe)} />
           <Linha

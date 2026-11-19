@@ -10,8 +10,9 @@ import {
   toProcessoOut,
   usuarioLogado,
 } from './db'
-import { CHECKLIST_EXEMPLO, RELATORIO_EXEMPLO } from './fixtures'
+import { CHECKLIST_ESPECIALIZADO, RELATORIO_EXEMPLO } from './fixtures'
 import { erro, exigirAdmin, exigirSessao } from './http'
+import { camposEspecializadosValidos } from './regrasChecklist'
 import { calcularPendenciasMock } from './regrasPendencias'
 
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
@@ -158,7 +159,7 @@ export const processosHandlers: HttpHandler[] = [
       processo.erro = 'PDF sem camada de texto'
       return erro(422, 'PDF sem camada de texto')
     }
-    const checklist = structuredClone(CHECKLIST_EXEMPLO)
+    const checklist = structuredClone(CHECKLIST_ESPECIALIZADO)
     registrarEvento(processo, processo.checklist ? 'reanalise' : 'analise', usuario.username)
     substituirChecklist(processo, checklist)
     processo.relatorio = structuredClone(RELATORIO_EXEMPLO)
@@ -197,6 +198,9 @@ export const processosHandlers: HttpHandler[] = [
     const processo = buscarProcesso(params.id)
     if (!processo) return erro(404, 'Processo não encontrado')
     const checklist = (await request.json()) as Checklist
+    if (!camposEspecializadosValidos(checklist)) {
+      return erro(422, 'Campos especializados inválidos')
+    }
     substituirChecklist(processo, checklist)
     registrarEvento(processo, 'edicao', usuario.username)
     processo.numero_processo = checklist.numero_processo

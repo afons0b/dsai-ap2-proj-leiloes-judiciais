@@ -1,6 +1,6 @@
 # Checklists especializados por categoria de bem
 
-Data: 19/11/2026. Status: aprovação condicional informada pela equipe; ajustes documentados, não implementada.
+Data: 19/11/2026. Status: aprovada pela equipe e implementada; validação pontual registrada abaixo.
 
 ## 1. Escopo e referências
 
@@ -32,13 +32,14 @@ Referências técnicas comparadas:
 
 ✓ = presente no modelo; — = sem campo específico. Ausência no modelo não significa
 inexistência jurídica ou autorização para apagar dados. Caminhos sem prefixo estão
-em `bens[]`, salvo indicação. **Novo** indica proposta, não implementação existente.
+em `bens[]`, salvo indicação. **Novo** indica campo introduzido nesta evolução,
+comparado ao contrato anterior.
 
 | Campo/grupo do cliente | I | M | V | Cobertura atual / adequação proposta |
 |---|:---:|:---:|:---:|---|
 | Vara, número e juiz | ✓ | ✓ | ✓ | `Checklist.vara`, `numero_processo`, `juiz`; manter `tipo_justica`. |
 | Partes, CPF/CNPJ e representação | ✓ | ✓ | ✓ | `exequente`, `executados[]`, `advogados[].nome/oab/ref`; **novo** `Parte.representacao` para texto institucional sem inventar advogado. |
-| CPF do advogado | — | ✓ | — | Ausente em `Advogado` atual (`nome`, `oab`, `ref`); **novo** `Advogado.cpf`, string opcional/anulável, independente do CPF/CNPJ da parte. |
+| CPF do advogado | — | ✓ | — | Ausente no contrato anterior de `Advogado` (`nome`, `oab`, `ref`); **novo** `Advogado.cpf`, string opcional/anulável, independente do CPF/CNPJ da parte. |
 | Procuração | ✓ | ✓ | ✓ | Reutilizar `Advogado.ref` quando vinculada ao advogado; **novo** `Parte.procuracao_ref` quando a referência pertence à parte/representação sem advogado identificado. Não duplicar referências por suposição. |
 | Citação e referência | ✓ | ✓ | ✓ | `Executado.citado`, `citacao_forma`, `citacao_ref`. |
 | CDA / título executivo | ✓ | ✓ | ✓ | `Execucao.cda` cobre CDA; **novo** `titulo_executivo` para título genérico, sem renomear CDA. |
@@ -85,7 +86,7 @@ por bem; não fixar a quantidade de bens a essa amostra.
 | RF09 | Preservar revisão/aprovação humana e eventos existentes de análise, reanálise, edição e aprovação; nenhuma extração aprova automaticamente o resultado. |
 | RF10 | Manter a organização por domínio, componentes e identidade visual existentes; separar validação/modelagem da apresentação dinâmica. |
 
-## 4. Modelagem proposta
+## 4. Modelagem
 
 Evolução aditiva de `BemPenhorado`, sem herança polimórfica, tabelas por categoria
 ou renomeação de caminhos. Manter **todos os campos atuais**, inclusive os
@@ -182,7 +183,7 @@ Não criar gerador, template sanitizado, rota ou botão de exportação agora.
 
 ## 7. Critérios de aceite
 
-| ID | Critério verificável na implementação futura |
+| ID | Critério de aceite |
 |---|---|
 | CA01 | Um checklist sintético com imóvel, material, veículo e categoria desconhecida pode ser extraído, editado, salvo e reaberto sem troca de dados entre itens. |
 | CA02 | Todos os campos da matriz possuem destino existente/proposto; os novos são editáveis e aparecem na visualização correspondente. Materiais não recebem campos exclusivos inventados. |
@@ -199,9 +200,18 @@ Não criar gerador, template sanitizado, rota ou botão de exportação agora.
 | CA13 | O rótulo “RENAVAN” do modelo é mapeado para `veiculo.renavam`; edição, PUT, GET e reabertura preservam zeros à esquerda. Ausência/`null` são aceitos, sem inventar valor. |
 | CA14 | `Advogado.cpf` é editável e persistido por advogado, inclusive em listas de partes diferentes, sem confundir com `Parte.cpf_cnpj`. Ausência/`null` e dados legados são aceitos; zeros à esquerda permanecem, sem validação jurídica nova. |
 
-O contrato proposto está refletido em `SPEC/2026-10-01-backend.md` e na extensão
-de `SPEC/2026-11-18-edicao-checklist.md`; sua implementação e a adequação dos
-tipos/consumidores permanecem pendentes. Confirmar com o
+O contrato está refletido em `SPEC/2026-10-01-backend.md` e na extensão
+de `SPEC/2026-11-18-edicao-checklist.md`, com schemas, tipos, interfaces,
+prompts e mocks adequados. Confirmar com o
 cliente o sentido de “INT.” na seção DETRAN/SEFA e dos rótulos ano/modelo antes de
-qualquer interpretação além do texto. Esta sessão produziu somente documentação;
-não houve testes, builds, lint, auditorias ou comprovação de implementação.
+qualquer interpretação além do texto; até lá, manter esses campos textuais.
+
+Validação pontual em 19/11/2026: **16 testes novos backend e 14 frontend aprovados**,
+em `src/backend/tests/test_checklists_especializados.py` e
+`src/frontend/src/features/processos/ChecklistsEspecializados.test.tsx`.
+Backend usou schema temporário exclusivo em PostgreSQL local de QA; frontend,
+MSW. Dados sintéticos. Testes preexistentes diretamente afetados pelas fixtures
+foram adaptados, sem execução. Não foram executados E2E, suítes completas,
+builds, lint ou auditorias; não houve instalação de dependências.
+Validação manual de layout, regressão integrada e extração com LLM real não foram
+certificadas por esses testes. Exportação DOCX permanece fora desta entrega.

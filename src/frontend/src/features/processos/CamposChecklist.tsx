@@ -8,7 +8,7 @@ export const idCampoChecklist = (caminho: string) => `checklist-${caminho}`
 type Props = {
   caminho: string
   label: string
-  valor: string | null
+  valor: string | null | undefined
   onChange: (valor: string | null) => void
   erro?: string
   tipo?: 'text' | 'date' | 'textarea'

@@ -5,11 +5,11 @@ import { errosChecklist, novoBem, novoExecutado, valoresIguais } from './checkli
 describe('edição completa do checklist', () => {
   it('cria itens vazios sem dados fictícios e com nulabilidade correta', () => {
     expect(novoExecutado()).toEqual({
-      nome: '', cpf_cnpj: null, advogados: [], citado: null, citacao_forma: null, citacao_ref: null,
+      nome: '', cpf_cnpj: null, representacao: null, procuracao_ref: null, advogados: [], citado: null, citacao_forma: null, citacao_ref: null,
     })
     const bem = novoBem()
     expect(bem.descricao).toBe('')
-    expect(Object.keys(bem)).toHaveLength(20)
+    expect(Object.keys(bem)).toHaveLength(30)
     expect(Object.entries(bem).filter(([chave]) => chave !== 'descricao').every(([, v]) => v === null))
       .toBe(true)
   })

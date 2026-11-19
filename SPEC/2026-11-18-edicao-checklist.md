@@ -3,8 +3,8 @@
 Data: 2026-11-18. Status: implementada; incluída na entrega da edição completa.
 
 As seções 1–6 registram a edição do contrato original. A seção 7 acrescenta o
-contrato proposto em 19/11/2026, ainda não implementado; não constitui nova evidência
-de testes ou aprovação definitiva.
+contrato aprovado em 19/11/2026, implementado localmente com validação pontual
+registrada na spec de checklists especializados.
 
 ## 1. Objetivo e escopo
 
@@ -162,12 +162,12 @@ Validação implementada: testes unitários dos helpers e testes de UI com MSW
 cobrindo payload completo, campos intactos, listas dinâmicas, descarte e falhas.
 Ver resultados e limites de validação em [HANDOFF-AP2](../docs/HANDOFF-AP2.md).
 
-## 7. Extensão proposta em 19/11/2026 — checklists especializados
+## 7. Extensão de 19/11/2026 — checklists especializados
 
 Seguir [checklists especializados](2026-11-19-checklists-especializados.md) e o
-[contrato backend §2.1](2026-10-01-backend.md#21-extensão-proposta-em-19112026--não-implementada).
+[contrato backend §2.1](2026-10-01-backend.md).
 Esta extensão permite os campos adicionais abaixo no mesmo PUT completo; o escopo
-original sem alterações de schema não se aplica a essa evolução proposta.
+original sem alterações de schema não se aplica a essa evolução.
 
 | Seção | Novos campos editáveis |
 |---|---|
@@ -193,14 +193,14 @@ original sem alterações de schema não se aplica a essa evolução proposta.
   segue sua invalidação atual, sem aprovar automaticamente. Não presumir significado
   de “INT.” ou dos rótulos ano/modelo além do texto informado.
 
-Critérios adicionais para a implementação futura:
+Critérios adicionais:
 
 | ID | Evidência esperada |
 |---|---|
 | CA13 | Formulário misto permite editar e reabrir campos comuns/especializados de cada categoria, preservando dados ao trocar categoria e lendo JSON legado sem obrigar preenchimento. |
 | CA14 | RENAVAM sintético com zeros à esquerda mantém exatamente a string após edição/PUT/GET; ausência e `null` são aceitos. “RENAVAN” no texto é extraído como `veiculo.renavam`. |
 | CA15 | CPF sintético de cada advogado mantém zeros à esquerda e associação ao item correto no exequente/executado; não altera CPF/CNPJ das partes. Ausência e `null` são aceitos. |
-| CA16 | Aprovação e eventos existentes são preservados; campos opcionais/ambíguos não introduzem regras jurídicas nem dados inventados. Os novos comportamentos recebem testes próprios na implementação, sem alegar execução nesta revisão documental. |
+| CA16 | Aprovação e eventos existentes são preservados; campos opcionais/ambíguos não introduzem regras jurídicas nem dados inventados. Os novos comportamentos recebem testes próprios, com resultados registrados na spec de checklists especializados. |
 
 Referências: [CLAUDE.md](../CLAUDE.md), [frontend](../src/frontend/CLAUDE.md),
 [contrato backend](2026-10-01-backend.md),

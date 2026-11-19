@@ -105,8 +105,8 @@ async def test_analisar_preenche_checklist_e_relatorio(cliente_logado: AsyncClie
     corpo = resposta.json()
     assert corpo["status"] == "analisado"
     assert corpo["analisado_em"] is not None
-    assert corpo["numero_processo"] == "1003966-15.2022.4.01.4301"
-    assert corpo["vara"].startswith("2ª Vara Federal")
+    assert corpo["numero_processo"] == "PROCESSO-SINTETICO-001"
+    assert corpo["vara"] == "Vara de Demonstração"
     esperado = json.loads((FIXTURES_DIR / "Checklist.json").read_text(encoding="utf-8"))
     assert corpo["checklist"] == esperado
     assert len(corpo["relatorio"]["etapas"]) == 4
@@ -280,8 +280,8 @@ def test_pendencias_executado_nao_citado_bloqueia() -> None:
         Pendencia(
             gravidade="bloqueia",
             campo="executados[1].citado",
-            mensagem="Citação de EURIVALDO SOARES DE ANDRADE não comprovada",
-            ref="Id 1308225782",
+            mensagem="Citação de Executado Exemplo 2 não comprovada",
+            ref="Doc Sintético C",
         )
     ]
 

@@ -1,92 +1,182 @@
 {
-  "vara": "2ª Vara Federal Cível e Criminal da Comarca de Araguaína - TO",
-  "numero_processo": "1003966-15.2022.4.01.4301",
-  "juiz": "CLAUDIO CEZAR CAVALCANTES",
-  "tipo_justica": "federal",
+  "vara": "Vara de Demonstração",
+  "numero_processo": "PROCESSO-SINTETICO-001",
+  "juiz": "Juiz Exemplo",
+  "tipo_justica": "estadual",
   "exequente": {
-    "nome": "UNIÃO FEDERAL",
-    "cpf_cnpj": "00.394.411/0001-09",
+    "nome": "Exequente Exemplo",
+    "cpf_cnpj": null,
     "advogados": [
-      {"nome": "Procuradoria da União nos Estados e no Distrito Federal", "oab": null, "ref": null}
-    ]
+      {
+        "nome": "Advogado Exemplo",
+        "oab": "OAB/EX DEMO",
+        "ref": "Doc Sintético A",
+        "cpf": "00000000001"
+      }
+    ],
+    "representacao": null,
+    "procuracao_ref": null
   },
   "executados": [
     {
-      "nome": "EURIVALDO SOARES DE ANDRADE & CIA LTDA",
-      "cpf_cnpj": "07.354.652/0001-73",
+      "nome": "Executado Exemplo",
+      "cpf_cnpj": null,
       "advogados": [
-        {"nome": "Maria Zélida Candado de Andrade", "oab": "OAB/TO 10.217", "ref": "Id 1315207293"},
-        {"nome": "Ciy Farney Jose Schmaltz Caetano", "oab": "OAB/TO 6.607", "ref": "Id 1316180771"}
+        {
+          "nome": "Advogado Exemplo",
+          "oab": "OAB/EX DEMO",
+          "ref": "Doc Sintético A",
+          "cpf": "00000000001"
+        }
       ],
       "citado": true,
-      "citacao_forma": "mandado",
-      "citacao_ref": "Id 1308225768"
+      "citacao_forma": "Forma registrada no exemplo",
+      "citacao_ref": "Doc Sintético B",
+      "representacao": null,
+      "procuracao_ref": null
     },
     {
-      "nome": "EURIVALDO SOARES DE ANDRADE",
-      "cpf_cnpj": "179.658.022-87",
+      "nome": "Executado Exemplo 2",
+      "cpf_cnpj": null,
       "advogados": [
-        {"nome": "Maria Zélida Candado de Andrade", "oab": "OAB/TO 10.217", "ref": "Id 1315207293"},
-        {"nome": "Ciy Farney Jose Schmaltz Caetano", "oab": "OAB/TO 6.607", "ref": "Id 1316180771"}
+        {
+          "nome": "Advogado Exemplo",
+          "oab": "OAB/EX DEMO",
+          "ref": "Doc Sintético A",
+          "cpf": "00000000001"
+        }
       ],
       "citado": true,
-      "citacao_forma": "mandado",
-      "citacao_ref": "Id 1308225782"
+      "citacao_forma": "Forma registrada no exemplo",
+      "citacao_ref": "Doc Sintético C",
+      "representacao": null,
+      "procuracao_ref": null
     }
   ],
   "execucao": {
     "cda": null,
     "natureza_divida": null,
-    "classe": null,
-    "valor_divida": "250000.00",
-    "data_divida": null
+    "classe": "Execução sintética",
+    "valor_divida": "500.00",
+    "data_divida": "2026-11-01",
+    "titulo_executivo": "Título sintético",
+    "valor_divida_ref": null
   },
   "bens": [
     {
-      "descricao": "Lote nº 04, Quadra 18, Loteamento Boa Esperança, situado na Avenida Manoel Dias de Oliveira, com área de 360m², Município de Babaçulândia-TO, medindo 12,00 metros de frente pela Avenida Manoel Dias de Oliveira; 30,00 metros de lateral direita, confrontando com o Lote 05; 12,00 metros de fundo, confrontando com o Lote 31 e 30,00 metros de lateral esquerda, confrontando com o Lote 03.",
-      "matricula": "6.351",
-      "localizacao": "Avenida Manoel Dias de Oliveira, Loteamento Boa Esperança, Babaçulândia-TO",
-      "data_penhora": "2025-10-24",
-      "penhora_ref": "Id 2221536340",
-      "fiel_depositario": "Eurivaldo Soares de Andrade (Id 2221536095)",
+      "descricao": "Bem sintético 1",
+      "matricula": "MAT-SINTETICA",
+      "localizacao": null,
+      "data_penhora": null,
+      "penhora_ref": null,
+      "fiel_depositario": null,
       "executado_intimado": true,
-      "data_intimacao": "2025-11-06",
-      "intimacao_ref": "Id 2221534539",
-      "propriedade": "Imóvel de propriedade da pessoa jurídica executada",
+      "data_intimacao": null,
+      "intimacao_ref": null,
+      "propriedade": null,
       "valor_avaliacao": "120000.00",
-      "data_avaliacao": "2025-10-24",
+      "data_avaliacao": null,
       "oficial_avaliacao": null,
       "valor_reavaliacao": null,
       "data_reavaliacao": null,
       "certidao_matricula_ref": null,
       "averbacao_penhora": null,
-      "hipoteca": "Imóvel sem ônus hipotecário",
+      "hipoteca": null,
       "enfiteuse": null,
-      "outras_penhoras": null
+      "outras_penhoras": null,
+      "imovel": {
+        "intimacao_conjuge": null,
+        "data_averbacao_penhora": null
+      },
+      "veiculo": null,
+      "intimacao_forma": null,
+      "avaliacao_ref": null,
+      "oficial_reavaliacao": null,
+      "reavaliacao_ref": null,
+      "intimacao_reavaliacao": null,
+      "data_intimacao_reavaliacao": null,
+      "intimacao_reavaliacao_ref": null,
+      "categoria": "imovel"
     },
     {
-      "descricao": "Lote nº 10, Quadra 11, Loteamento Boa Esperança, situado na Avenida Santa Luzia, com área de 391,08m², Município de Babaçulândia-TO, medindo 9,97 metros de frente pela Avenida Santa Luzia; 38,56 metros de lateral direita, confrontando com o Lote 11; 10,12 metros de fundo, confrontando com a área da Igreja e 39,95 metros de lateral esquerda, confrontando com o Lote 09.",
-      "matricula": "6.235",
-      "localizacao": "Avenida Santa Luzia, Loteamento Boa Esperança, Babaçulândia-TO",
-      "data_penhora": "2025-10-24",
-      "penhora_ref": "Id 2221536340",
-      "fiel_depositario": "Eurivaldo Soares de Andrade (Id 2221536095)",
+      "descricao": "Bem sintético 2",
+      "matricula": null,
+      "localizacao": null,
+      "data_penhora": null,
+      "penhora_ref": null,
+      "fiel_depositario": null,
       "executado_intimado": true,
-      "data_intimacao": "2025-11-06",
-      "intimacao_ref": "Id 2221534539",
-      "propriedade": "Imóvel de propriedade da pessoa jurídica executada",
-      "valor_avaliacao": "95000.00",
-      "data_avaliacao": "2025-10-24",
+      "data_intimacao": null,
+      "intimacao_ref": null,
+      "propriedade": null,
+      "valor_avaliacao": "200.00",
+      "data_avaliacao": null,
       "oficial_avaliacao": null,
       "valor_reavaliacao": null,
       "data_reavaliacao": null,
       "certidao_matricula_ref": null,
       "averbacao_penhora": null,
-      "hipoteca": "Imóvel sem ônus hipotecário",
+      "hipoteca": null,
       "enfiteuse": null,
-      "outras_penhoras": null
+      "outras_penhoras": null,
+      "imovel": null,
+      "veiculo": null,
+      "intimacao_forma": null,
+      "avaliacao_ref": null,
+      "oficial_reavaliacao": null,
+      "reavaliacao_ref": null,
+      "intimacao_reavaliacao": null,
+      "data_intimacao_reavaliacao": null,
+      "intimacao_reavaliacao_ref": null,
+      "categoria": "material"
+    },
+    {
+      "descricao": "Bem sintético 3",
+      "matricula": null,
+      "localizacao": null,
+      "data_penhora": null,
+      "penhora_ref": null,
+      "fiel_depositario": null,
+      "executado_intimado": true,
+      "data_intimacao": null,
+      "intimacao_ref": null,
+      "propriedade": null,
+      "valor_avaliacao": "300.00",
+      "data_avaliacao": null,
+      "oficial_avaliacao": null,
+      "valor_reavaliacao": null,
+      "data_reavaliacao": null,
+      "certidao_matricula_ref": null,
+      "averbacao_penhora": null,
+      "hipoteca": null,
+      "enfiteuse": null,
+      "outras_penhoras": null,
+      "imovel": null,
+      "veiculo": {
+        "marca_modelo": null,
+        "placa": null,
+        "cor": null,
+        "ano": null,
+        "modelo": null,
+        "chassi": null,
+        "renavam": "00012345678",
+        "proprietario_detran": null,
+        "intimacao_detran": null,
+        "credor_fiduciario": null,
+        "multas_debitos": null
+      },
+      "intimacao_forma": null,
+      "avaliacao_ref": null,
+      "oficial_reavaliacao": null,
+      "reavaliacao_ref": null,
+      "intimacao_reavaliacao": null,
+      "data_intimacao_reavaliacao": null,
+      "intimacao_reavaliacao_ref": null,
+      "categoria": "veiculo"
     }
   ],
-  "recursos": "Não foi certificada a interposição de quaisquer recursos nos autos de execução.",
-  "observacoes_leilao": ["Nomeação do leiloeiro Sandro de Oliveira"]
+  "recursos": null,
+  "observacoes_leilao": [
+    "Observação sintética para demonstração."
+  ]
 }

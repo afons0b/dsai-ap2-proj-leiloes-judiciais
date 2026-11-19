@@ -12,9 +12,13 @@ export function ParteChecklist({ parte, caminho, titulo, onChange }: {
           anulavel={false} onChange={(v) => onChange({ ...parte, nome: v ?? '' })} />
         <CampoChecklist caminho={`${caminho}.cpf_cnpj`} label={`${titulo} — CPF/CNPJ`} valor={parte.cpf_cnpj}
           onChange={(v) => onChange({ ...parte, cpf_cnpj: v })} />
+        <CampoChecklist caminho={`${caminho}.representacao`} label={`${titulo} — representação`} valor={parte.representacao}
+          onChange={(v) => onChange({ ...parte, representacao: v })} />
+        <CampoChecklist caminho={`${caminho}.procuracao_ref`} label={`${titulo} — referência da procuração`} valor={parte.procuracao_ref}
+          onChange={(v) => onChange({ ...parte, procuracao_ref: v })} />
       </div>
       <ListaChecklist valores={parte.advogados} onChange={(advogados) => onChange({ ...parte, advogados })}
-        novo={() => ({ nome: '', oab: null, ref: null })} adicionar={`Adicionar advogado — ${titulo}`}
+        novo={() => ({ nome: '', cpf: null, oab: null, ref: null })} adicionar={`Adicionar advogado — ${titulo}`}
         remover={(i) => `Remover advogado ${i + 1} — ${titulo}`}>
         {(advogado, i, atualizar) => (
           <fieldset className="grid gap-3 sm:grid-cols-3">
@@ -23,6 +27,8 @@ export function ParteChecklist({ parte, caminho, titulo, onChange }: {
               valor={advogado.nome} anulavel={false} onChange={(v) => atualizar({ ...advogado, nome: v ?? '' })} />
             <CampoChecklist caminho={`${caminho}.advogados.${i}.oab`} label={`${titulo} — advogado ${i + 1} — OAB`}
               valor={advogado.oab} onChange={(v) => atualizar({ ...advogado, oab: v })} />
+            <CampoChecklist caminho={`${caminho}.advogados.${i}.cpf`} label={`${titulo} — advogado ${i + 1} — CPF`}
+              valor={advogado.cpf} onChange={(v) => atualizar({ ...advogado, cpf: v })} />
             <CampoChecklist caminho={`${caminho}.advogados.${i}.ref`} label={`${titulo} — advogado ${i + 1} — referência`}
               valor={advogado.ref} onChange={(v) => atualizar({ ...advogado, ref: v })} />
           </fieldset>

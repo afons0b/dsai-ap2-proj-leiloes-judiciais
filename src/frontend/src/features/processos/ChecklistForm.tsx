@@ -127,6 +127,7 @@ export function ChecklistForm({ inicial, salvando, erro, onSalvar, onCancelar }:
             {([
               ['cda', 'CDA'], ['natureza_divida', 'Natureza da dívida'], ['classe', 'Classe'],
               ['valor_divida', 'Valor da dívida (R$)'], ['data_divida', 'Data da dívida'],
+              ['titulo_executivo', 'Título executivo'], ['valor_divida_ref', 'Referência do valor da dívida'],
             ] as const).map(([campo, label]) => (
               <CampoChecklist key={campo} caminho={`execucao.${campo}`} label={label}
                 tipo={campo === 'data_divida' ? 'date' : 'text'} valor={checklist.execucao[campo]}
