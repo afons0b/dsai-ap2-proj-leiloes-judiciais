@@ -1,6 +1,6 @@
 # Checklists especializados por categoria de bem
 
-Data: 19/11/2026. Status: proposta para revisão; não implementada.
+Data: 19/11/2026. Status: aprovação condicional informada pela equipe; ajustes documentados, não implementada.
 
 ## 1. Escopo e referências
 
@@ -38,6 +38,7 @@ em `bens[]`, salvo indicação. **Novo** indica proposta, não implementação e
 |---|:---:|:---:|:---:|---|
 | Vara, número e juiz | ✓ | ✓ | ✓ | `Checklist.vara`, `numero_processo`, `juiz`; manter `tipo_justica`. |
 | Partes, CPF/CNPJ e representação | ✓ | ✓ | ✓ | `exequente`, `executados[]`, `advogados[].nome/oab/ref`; **novo** `Parte.representacao` para texto institucional sem inventar advogado. |
+| CPF do advogado | — | ✓ | — | Ausente em `Advogado` atual (`nome`, `oab`, `ref`); **novo** `Advogado.cpf`, string opcional/anulável, independente do CPF/CNPJ da parte. |
 | Procuração | ✓ | ✓ | ✓ | Reutilizar `Advogado.ref` quando vinculada ao advogado; **novo** `Parte.procuracao_ref` quando a referência pertence à parte/representação sem advogado identificado. Não duplicar referências por suposição. |
 | Citação e referência | ✓ | ✓ | ✓ | `Executado.citado`, `citacao_forma`, `citacao_ref`. |
 | CDA / título executivo | ✓ | ✓ | ✓ | `Execucao.cda` cobre CDA; **novo** `titulo_executivo` para título genérico, sem renomear CDA. |
@@ -54,6 +55,7 @@ em `bens[]`, salvo indicação. **Novo** indica proposta, não implementação e
 | Hipoteca e enfiteuse/aforamento | ✓ | — | — | `hipoteca`, `enfiteuse`, preservados. |
 | Outras penhoras | ✓ | — | ✓ | `outras_penhoras`; campo comum reutilizado, sem duplicação. |
 | Identificação do veículo na descrição | — | — | ✓ | Texto existe somente em `descricao`; **novos** `veiculo.marca_modelo`, `placa`, `cor`, `ano`, `modelo`, `chassi`. `ano`/`modelo` preservam os rótulos do modelo, sem presumir fabricação/ano-modelo quando ambíguos. |
+| RENAVAM, grafado “RENAVAN” na descrição | — | — | ✓ | **Novo** `veiculo.renavam`, string opcional/anulável; preservar zeros à esquerda e descrição original, sem reproduzir a grafia do rótulo na chave da API. |
 | Proprietário no DETRAN | — | — | ✓ | **Novo** `veiculo.proprietario_detran`; não substituir automaticamente `propriedade`. |
 | “INT.” na seção DETRAN/SEFA | — | — | ✓ | **Novo** `veiculo.intimacao_detran`, textual; significado/destinatário pendente de confirmação. |
 | Credor fiduciário | — | — | ✓ | **Novo** `veiculo.credor_fiduciario`, textual, preservando negativa expressa. |
@@ -64,8 +66,8 @@ em `bens[]`, salvo indicação. **Novo** indica proposta, não implementação e
 | Local/data e assinatura do documento | ✓ | ✓ | ✓ | Elementos da futura apresentação; não extrair como data do processo nem equiparar assinatura à aprovação no sistema. |
 
 O modelo de materiais não apresenta campos exclusivos de quantidade, unidade,
-número de série ou conservação. Não adicioná-los por suposição. RENAVAM também
-não aparece como campo nos modelos analisados. O modelo de imóveis repete o bloco
+número de série ou conservação. Não adicioná-los por suposição. RENAVAM aparece
+na descrição do veículo como “RENAVAN”. O modelo de imóveis repete o bloco
 por bem; não fixar a quantidade de bens a essa amostra.
 
 ## 3. Requisitos funcionais
@@ -91,11 +93,12 @@ imobiliários no nível original, para não quebrar dados e consumidores.
 
 | Estrutura | Campos novos e tipos |
 |---|---|
+| `Advogado` | `cpf: string\|null`, opcional na entrada, default `null`. |
 | `Parte` / `Executado` por herança | `representacao: string\|null`, `procuracao_ref: string\|null`. |
 | `Execucao` | `titulo_executivo: string\|null`, `valor_divida_ref: string\|null`. |
 | `BemPenhorado` | `categoria: "imovel"\|"material"\|"veiculo"\|null`; `intimacao_forma`, `avaliacao_ref`, `oficial_reavaliacao`, `reavaliacao_ref`, `intimacao_reavaliacao`, `intimacao_reavaliacao_ref`: `string\|null`; `data_intimacao_reavaliacao: date\|null`; `imovel: DadosImovel\|null`; `veiculo: DadosVeiculo\|null`. |
 | `DadosImovel` | `intimacao_conjuge: string\|null`, `data_averbacao_penhora: date\|null`. |
-| `DadosVeiculo` | `marca_modelo`, `placa`, `cor`, `ano`, `modelo`, `chassi`, `proprietario_detran`, `intimacao_detran`, `credor_fiduciario`, `multas_debitos`: `string\|null`. |
+| `DadosVeiculo` | `marca_modelo`, `placa`, `cor`, `ano`, `modelo`, `chassi`, `renavam`, `proprietario_detran`, `intimacao_detran`, `credor_fiduciario`, `multas_debitos`: `string\|null`. Todos opcionais na entrada, default `null`. |
 
 Todos os novos campos têm default `null` no backend; propriedades ausentes em
 JSON legado são interpretadas como desconhecidas. Tipos de resposta espelhados
@@ -114,6 +117,10 @@ checklist e a persistência pelo service existente.
   datas completas válidas em `YYYY-MM-DD`. Ano e modelo do veículo permanecem texto.
 - Novos campos são opcionais/anuláveis; não criar máscaras de placa/chassi, regras
   de titularidade, obrigatoriedade de intimações ou validações jurídicas.
+- `Advogado.cpf` e `veiculo.renavam` são texto, nunca números: preservar zeros à
+  esquerda e conteúdo informado, sem máscaras obrigatórias, cálculo de dígitos ou
+  preenchimento por dedução. Extrair “RENAVAN” como `renavam` somente quando presente;
+  CPF do advogado pertence ao respectivo advogado, no exequente ou executado.
 - `null` significa desconhecido; `false` nos booleanos existentes significa
   negativa expressa. Texto “não há” informado nos autos deve ser preservado,
   sem ser convertido em ausência de informação. Não usar zero como desconhecido.
@@ -189,9 +196,12 @@ Não criar gerador, template sanitizado, rota ou botão de exportação agora.
 | CA10 | Tipos Pydantic/TS, prompt, fake e MSW usam o mesmo contrato; testes futuros cobrem três categorias, mistura, legado, campos ocultos, validação e aprovação/histórico com dados sintéticos. |
 | CA11 | Layout reutiliza componentes, seções e acessibilidade atuais, com navegação por teclado e apresentação em tela estreita. |
 | CA12 | Somente código/documentação e fixtures sintéticas são versionados; originais e dados processuais reais permanecem fora do Git. Exportação DOCX continua explicitamente pendente. |
+| CA13 | O rótulo “RENAVAN” do modelo é mapeado para `veiculo.renavam`; edição, PUT, GET e reabertura preservam zeros à esquerda. Ausência/`null` são aceitos, sem inventar valor. |
+| CA14 | `Advogado.cpf` é editável e persistido por advogado, inclusive em listas de partes diferentes, sem confundir com `Parte.cpf_cnpj`. Ausência/`null` e dados legados são aceitos; zeros à esquerda permanecem, sem validação jurídica nova. |
 
-Antes de implementar, atualizar o contrato em `SPEC/2026-10-01-backend.md`, seus
-tipos/consumidores e a spec de edição conforme esta proposta. Confirmar com o
+O contrato proposto está refletido em `SPEC/2026-10-01-backend.md` e na extensão
+de `SPEC/2026-11-18-edicao-checklist.md`; sua implementação e a adequação dos
+tipos/consumidores permanecem pendentes. Confirmar com o
 cliente o sentido de “INT.” na seção DETRAN/SEFA e dos rótulos ano/modelo antes de
 qualquer interpretação além do texto. Esta sessão produziu somente documentação;
 não houve testes, builds, lint, auditorias ou comprovação de implementação.

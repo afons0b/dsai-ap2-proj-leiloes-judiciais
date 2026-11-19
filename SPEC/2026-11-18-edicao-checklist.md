@@ -2,6 +2,10 @@
 
 Data: 2026-11-18. Status: implementada; incluída na entrega da edição completa.
 
+As seções 1–6 registram a edição do contrato original. A seção 7 acrescenta o
+contrato proposto em 19/11/2026, ainda não implementado; não constitui nova evidência
+de testes ou aprovação definitiva.
+
 ## 1. Objetivo e escopo
 
 Completar a edição disponível em `/processos/:id`, utilizando integralmente o
@@ -157,6 +161,46 @@ Não criar PATCH, campos adicionais, persistência parcial ou novo endpoint.
 Validação implementada: testes unitários dos helpers e testes de UI com MSW
 cobrindo payload completo, campos intactos, listas dinâmicas, descarte e falhas.
 Ver resultados e limites de validação em [HANDOFF-AP2](../docs/HANDOFF-AP2.md).
+
+## 7. Extensão proposta em 19/11/2026 — checklists especializados
+
+Seguir [checklists especializados](2026-11-19-checklists-especializados.md) e o
+[contrato backend §2.1](2026-10-01-backend.md#21-extensão-proposta-em-19112026--não-implementada).
+Esta extensão permite os campos adicionais abaixo no mesmo PUT completo; o escopo
+original sem alterações de schema não se aplica a essa evolução proposta.
+
+| Seção | Novos campos editáveis |
+|---|---|
+| Advogados de cada parte | `cpf`, string opcional/anulável, sem confundir com `Parte.cpf_cnpj`. |
+| Exequente e executados | `representacao`, `procuracao_ref`. |
+| Execução | `titulo_executivo`, `valor_divida_ref`. |
+| Cada bem | `categoria`, `intimacao_forma`, `avaliacao_ref`, `oficial_reavaliacao`, `reavaliacao_ref`, `intimacao_reavaliacao`, `data_intimacao_reavaliacao`, `intimacao_reavaliacao_ref`. |
+| Imóvel | `imovel.intimacao_conjuge`, `imovel.data_averbacao_penhora`; campos imobiliários legados permanecem nos caminhos originais. |
+| Veículo | `veiculo.marca_modelo`, `placa`, `cor`, `ano`, `modelo`, `chassi`, `renavam`, `proprietario_detran`, `intimacao_detran`, `credor_fiduciario`, `multas_debitos`. Todos pertencem ao bloco `veiculo`. |
+| Material | Campos comuns; nenhum campo exclusivo presumido. |
+
+- Categoria por bem: “Não informado”, “Imóvel”, “Material”, “Veículo”. Permitir
+  categorias diferentes no mesmo processo e formulário dinâmico por item.
+- Campos novos são opcionais/anuláveis, default `null`; omissão em legado é
+  aceita. `cpf` e `renavam` usam entrada textual, preservando zeros à esquerda e
+  conteúdo informado, sem conversão numérica ou validação jurídica adicional.
+- O rótulo de interface é “RENAVAM”; o modelo fonte usa “RENAVAN”. A extração
+  mapeia esse rótulo para `veiculo.renavam` sem alterar a descrição original.
+- Trocar categoria não apaga campos comuns ou especializados; dados de outra
+  categoria continuam acessíveis em seção identificada. Não sobrescrever rascunhos,
+  referências ou campos não editados. Preservar confirmações e fluxo de salvamento.
+- Manter a aprovação humana por revisão e o histórico existentes; salvar/reanalisar
+  segue sua invalidação atual, sem aprovar automaticamente. Não presumir significado
+  de “INT.” ou dos rótulos ano/modelo além do texto informado.
+
+Critérios adicionais para a implementação futura:
+
+| ID | Evidência esperada |
+|---|---|
+| CA13 | Formulário misto permite editar e reabrir campos comuns/especializados de cada categoria, preservando dados ao trocar categoria e lendo JSON legado sem obrigar preenchimento. |
+| CA14 | RENAVAM sintético com zeros à esquerda mantém exatamente a string após edição/PUT/GET; ausência e `null` são aceitos. “RENAVAN” no texto é extraído como `veiculo.renavam`. |
+| CA15 | CPF sintético de cada advogado mantém zeros à esquerda e associação ao item correto no exequente/executado; não altera CPF/CNPJ das partes. Ausência e `null` são aceitos. |
+| CA16 | Aprovação e eventos existentes são preservados; campos opcionais/ambíguos não introduzem regras jurídicas nem dados inventados. Os novos comportamentos recebem testes próprios na implementação, sem alegar execução nesta revisão documental. |
 
 Referências: [CLAUDE.md](../CLAUDE.md), [frontend](../src/frontend/CLAUDE.md),
 [contrato backend](2026-10-01-backend.md),
